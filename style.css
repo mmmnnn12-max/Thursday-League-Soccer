@@ -422,6 +422,69 @@ button{
 
   white-space: nowrap;   /* 🔥 이게 핵심 */
 }
+/* ================================
+   MOBILE OPTIMIZATION
+   ================================ */
+@media (max-width: 520px){
+
+  .container{ padding: 14px; }
+
+  /* 상단 네비: 탭처럼 가로 스크롤 */
+  .nav{
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .menu{
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    flex-wrap: nowrap;
+  }
+  .menu a{
+    flex: 0 0 auto;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* 버튼/입력 터치 영역 키우기 */
+  button, input, select{
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+  }
+
+  /* 테이블: 모바일에선 숨기고 카드형으로 */
+  .table{
+    display: none;
+  }
+
+  /* 모바일 카드형 표(우리가 JS로 만들어 넣을 거) */
+  .mList{ display: flex; flex-direction: column; gap: 10px; }
+  .mItem{
+    background: rgba(233,238,252,.04);
+    border: 1px solid rgba(233,238,252,.12);
+    border-radius: 16px;
+    padding: 12px;
+  }
+  .mTop{
+    display:flex; justify-content: space-between; align-items: center;
+    gap: 10px;
+    font-weight: 900;
+  }
+  .mMeta{
+    margin-top: 8px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 13px;
+    opacity: .9;
+  }
+  .kv{ display:flex; justify-content: space-between; gap: 10px; }
+  .k{ opacity: .75; font-weight: 800; }
+  .v{ font-weight: 900; }
+}
+
 
 
 
