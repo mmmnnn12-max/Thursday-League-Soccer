@@ -15,11 +15,11 @@
     { "id": "p8", "team": "팀조민규", "name": "선수2" }
   ],
   "matches": [
-    { "id": 1, "round": 1, "home": "팀임태원", "away": "팀이현준", "hg": null, "ag": null, "date": "" },
-    { "id": 2, "round": 1, "home": "팀윤하준", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
+    { "id": 1, "round": 1, "home": "팀임태원", "away": "팀윤하준", "hg": null, "ag": null, "date": "" },
+    { "id": 2, "round": 1, "home": "팀이현준", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
 
-    { "id": 3, "round": 2, "home": "팀임태원", "away": "팀윤하준", "hg": null, "ag": null, "date": "" },
-    { "id": 4, "round": 2, "home": "팀이현준", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
+    { "id": 3, "round": 2, "home": "팀임태원", "away": "팀이현준", "hg": null, "ag": null, "date": "" },
+    { "id": 4, "round": 2, "home": "팀윤하준", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
 
     { "id": 5, "round": 3, "home": "팀임태원", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
     { "id": 6, "round": 3, "home": "팀이현준", "away": "팀윤하준", "hg": null, "ag": null, "date": "" }
