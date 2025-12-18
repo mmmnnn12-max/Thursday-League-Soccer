@@ -167,15 +167,22 @@ function renderStandings(container, standings) {
   container.appendChild(table);
 }
 
-function renderSchedule(container, data) {
+function renderSchedule(container, data, opts = {}) {
+  const maxRounds = opts.maxRounds ?? Infinity;
+
   const groups = {};
   data.matches.forEach(m => {
     if (!groups[m.round]) groups[m.round] = [];
     groups[m.round].push(m);
   });
 
+  const rounds = Object.keys(groups)
+    .map(Number)
+    .sort((a,b)=>a-b)
+    .filter(r => r <= maxRounds);
+
   container.innerHTML = "";
-  Object.keys(groups).sort((a,b)=>Number(a)-Number(b)).forEach(round => {
+  rounds.forEach(round => {
     const card = el("div", { class: "card" });
     card.appendChild(el("h2", { text: `Round ${round}` }));
 
@@ -184,6 +191,7 @@ function renderSchedule(container, data) {
       const score = (m.hg === null || m.ag === null) ? "미정" : `${m.hg} : ${m.ag}`;
       const date = (m.date && m.date.trim()) ? ` · ${m.date}` : "";
       const played = (m.hg !== null && m.ag !== null);
+
       list.appendChild(el("div", { class: "matchRow" + (played ? " played" : "") }, [
         el("div", { class: "matchTeams", text: `${m.home} vs ${m.away}` }),
         el("div", { class: "matchMeta", text: `${score}${date}` })
