@@ -187,6 +187,33 @@ function renderTable(container, headers, rows) {
   container.appendChild(table);
 }
 
+function renderMobileList(container, items) {
+  const list = el("div", { class: "mList" });
+  items.forEach(it => {
+    const card = el("div", { class: "mItem" });
+
+    const top = el("div", { class: "mTop" }, [
+      el("div", { text: it.title }),
+      el("div", { text: it.badge || "" })
+    ]);
+
+    const meta = el("div", { class: "mMeta" });
+    (it.kvs || []).forEach(([k,v]) => {
+      meta.appendChild(el("div", { class: "kv" }, [
+        el("div", { class: "k", text: k }),
+        el("div", { class: "v", text: String(v) })
+      ]));
+    });
+
+    card.appendChild(top);
+    card.appendChild(meta);
+    list.appendChild(card);
+  });
+
+  container.appendChild(list);
+}
+
+
 function renderStandings(container, standings) {
   const table = el("table", { class: "table" });
   const thead = el("thead");
@@ -225,6 +252,18 @@ tr.appendChild(teamTd);
   table.appendChild(tbody);
   container.innerHTML = "";
   container.appendChild(table);
+  // 모바일 카드 리스트도 같이 출력(520px 이하에서만 보임)
+renderMobileList(container, standings.map((r, i) => ({
+  title: `${i+1}위 · ${r.team}`,
+  badge: `${r.PTS}점`,
+  kvs: [
+    ["경기", r.P],
+    ["승/무/패", `${r.W}/${r.D}/${r.L}`],
+    ["득점", r.GF],
+    ["실점", r.GA],
+    ["득실", r.GD],
+  ]
+})));
 }
 
 
@@ -274,6 +313,12 @@ function renderTopScorers(container, rows) {
     return;
   }
   renderTable(container, ["순위","선수","팀","골"], rows.map((r, i) => [i+1, r.name, r.team, r.goals]));
+  renderMobileList(container, rows.map((r, i) => ({
+  title: `${i+1}위 · ${r.name}`,
+  badge: `${r.goals}골`,
+  kvs: [["팀", r.team]]
+})));
+
 }
 
 /* ------------------ Admin logic (폼 입력 → JSON 생성) ------------------ */
