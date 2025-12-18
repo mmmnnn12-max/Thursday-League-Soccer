@@ -205,13 +205,13 @@ function renderStandings(container, standings) {
     tr.appendChild(el("td", { text: String(i + 1) }));
 
     // 2) 팀(링크)
-    const teamTd = document.createElement("td");
-    const a = document.createElement("a");
-    a.href = `team.html?team=${encodeURIComponent(r.team)}`;
-    a.textContent = r.team;
-    a.style.fontWeight = "900";
-    teamTd.appendChild(a);
-    tr.appendChild(teamTd);
+   const teamTd = document.createElement("td");
+const a = document.createElement("a");
+a.href = `team.html?team=${encodeURIComponent(r.team)}`;
+a.className = "teamLink";
+a.innerHTML = `<span class="icon">↗</span><span>${r.team}</span>`;
+teamTd.appendChild(a);
+tr.appendChild(teamTd);
 
     // 3) 나머지 숫자들
     [r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS].forEach(v => {
