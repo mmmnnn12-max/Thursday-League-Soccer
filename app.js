@@ -254,13 +254,24 @@ function renderTopScorers(container, rows) {
     container.innerHTML = `<div class="small">아직 득점자가 입력되지 않았어.</div>`;
     return;
   }
-  renderTable(container, ["순위","선수","팀","골"], rows.map((r, i) => [i+1, r.name, r.team, r.goals]));
+
+  const medalOf = (i) => (i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : "");
+
+  // PC 표
+  renderTable(
+    container,
+    ["순위","선수","팀","골"],
+    rows.map((r, i) => [i+1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
+  );
+
+  // 모바일 카드
   renderMobileList(container, rows.map((r, i) => ({
-    title: `${i+1}위 · ${r.name}`,
+    title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
     badge: `${r.goals}골`,
     kvs: [["팀", r.team]]
   })));
 }
+
 
 /* ------------------ Team helpers ------------------ */
 function getTeamMatches(data, team) {
@@ -296,6 +307,44 @@ function getTeamTopScorers(data, team) {
   rows.sort((a,b) => (b.goals - a.goals) || a.name.localeCompare(b.name, "ko"));
   return rows;
 }
+function getTeamFormLastN(data, team, n = 3) {
+  // 최근에 "결과가 입력된 경기" 기준으로 N개
+  const played = data.matches
+    .filter(m => (m.home === team || m.away === team) && m.hg !== null && m.ag !== null)
+    .slice()
+    .sort((a,b) => (b.round - a.round) || (b.id - a.id)); // 최신 먼저
+
+  const res = [];
+  for (const m of played) {
+    const isHome = (m.home === team);
+    const gf = isHome ? m.hg : m.ag;
+    const ga = isHome ? m.ag : m.hg;
+
+    let r = "D";
+    if (gf > ga) r = "W";
+    else if (gf < ga) r = "L";
+
+    res.push(r);
+    if (res.length >= n) break;
+  }
+
+  // 경기 자체가 부족하면 N개로 채움
+  while (res.length < n) res.push("N"); // Not enough
+  return res;
+}
+
+function renderFormDots(formArr) {
+  const wrap = document.createElement("span");
+  wrap.className = "formDots";
+  formArr.forEach(r => {
+    const d = document.createElement("span");
+    d.className = "formDot";
+    d.dataset.r = r;
+    wrap.appendChild(d);
+  });
+  return wrap;
+}
+
 
 /* ------------------ Mobile app tabbar + team sheet ------------------ */
 function injectTabbar(data, page){
@@ -454,13 +503,25 @@ async function boot() {
       if (!s) {
         if (summaryBox) summaryBox.innerHTML = `<div class="small">팀을 찾을 수 없어: ${team}</div>`;
       } else {
-        if (summaryBox) summaryBox.innerHTML = `
-          <div class="small">
-            <b>${s.rank}위</b> · 승점 <b>${s.PTS}</b><br/>
-            ${s.P}경기 ${s.W}승 ${s.D}무 ${s.L}패<br/>
-            득점 ${s.GF} / 실점 ${s.GA} / 득실 ${s.GD}
-          </div>
-        `;
+       const form = getTeamFormLastN(data, team, 3);
+const formText = form.map(x => x==="W"?"승":x==="D"?"무":x==="L"?"패":"-").join(" ");
+
+summaryBox.innerHTML = `
+  <div class="small">
+    <b>${s.rank}위</b> · 승점 <b>${s.PTS}</b><br/>
+    ${s.P}경기 ${s.W}승 ${s.D}무 ${s.L}패<br/>
+    득점 ${s.GF} / 실점 ${s.GA} / 득실 ${s.GD}
+  </div>
+`;
+
+const formRow = document.createElement("div");
+formRow.className = "formRow";
+formRow.appendChild(Object.assign(document.createElement("span"), { className: "formLabel", textContent: "최근 3경기" }));
+formRow.appendChild(renderFormDots(form));
+formRow.appendChild(Object.assign(document.createElement("span"), { className: "formText", textContent: `(${formText})` }));
+
+summaryBox.appendChild(formRow);
+
       }
 
       const top = getTeamTopScorers(data, team);
