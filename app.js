@@ -270,8 +270,35 @@ async function boot() {
   }
 
   if (page === "schedule") {
-    renderSchedule(document.querySelector("#schedule"), data);
+  const box = document.querySelector("#schedule");
+  const btn = document.querySelector("#btnMore");
+
+  // 전체 라운드 개수 계산
+  const allRounds = Array.from(new Set(data.matches.map(m => m.round))).sort((a,b)=>a-b);
+
+  let shown = 2; // 처음엔 2라운드까지만 보여줌
+  const render = () => {
+    const maxRound = allRounds[Math.min(shown, allRounds.length) - 1];
+    renderSchedule(box, data, { maxRounds: maxRound });
+
+    if (btn) {
+      if (shown >= allRounds.length) {
+        btn.style.display = "none";
+      } else {
+        btn.style.display = "inline-block";
+      }
+    }
+  };
+
+  if (btn) {
+    btn.onclick = () => {
+      shown += 1; // 더보기 누를 때마다 1라운드 추가
+      render();
+    };
   }
+
+  render();
+}
 
   if (page === "stats") {
     const status = computeTitleStatus(data);
