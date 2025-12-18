@@ -134,4 +134,135 @@ button.ghost { background: rgba(233,238,252,.04); }
 .pill[data-kind="win"] { background: rgba(233,238,252,.10); }
 .pill[data-kind="hot"] { background: rgba(233,238,252,.08); }
 .pill[data-kind="neutral"] { background: rgba(233,238,252,.06); }
+/* ================================
+   BLUE × BLACK GLOBAL THEME
+   ================================ */
+
+/* 핵심 색 변수 */
+:root{
+  --blue-main: #2563eb;   /* 메인 블루 */
+  --blue-soft: #60a5fa;  /* 밝은 블루 */
+  --blue-glow: rgba(37,99,235,.35);
+
+  --black-0: #05060a;    /* 최외곽 배경 */
+  --black-1: #0a0f1f;    /* 기본 배경 */
+  --black-2: #0f172a;    /* 카드 배경 */
+
+  --line-blue: rgba(96,165,250,.22);
+}
+
+/* 전체 배경 */
+body{
+  background:
+    radial-gradient(800px 500px at 10% -10%, rgba(37,99,235,.18), transparent 60%),
+    radial-gradient(600px 400px at 100% 0%, rgba(96,165,250,.14), transparent 55%),
+    linear-gradient(180deg, var(--black-0), var(--black-1) 70%);
+  color: #e5edff;
+}
+
+/* 상단바 */
+.topbar{
+  background: rgba(10,15,31,.85);
+  border-bottom: 1px solid var(--line-blue);
+  backdrop-filter: blur(12px);
+}
+
+/* 브랜드 (타이틀) */
+.brand{
+  font-weight: 900;
+  color: #e5edff;
+}
+.brand::after{
+  content:"";
+  display:inline-block;
+  width:9px;
+  height:9px;
+  margin-left:8px;
+  border-radius:999px;
+  background: linear-gradient(135deg, var(--blue-main), var(--blue-soft));
+  box-shadow: 0 0 14px var(--blue-glow);
+}
+
+/* 카드 */
+.card{
+  background:
+    linear-gradient(180deg,
+      rgba(37,99,235,.08),
+      var(--black-2) 40%);
+  border: 1px solid var(--line-blue);
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+/* 메뉴 버튼 */
+.menu a{
+  background: rgba(37,99,235,.08);
+  border: 1px solid rgba(96,165,250,.25);
+  color: #e5edff;
+}
+.menu a:hover{
+  background: rgba(37,99,235,.18);
+  box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  transform: translateY(-1px);
+}
+
+/* 테이블 */
+.table thead th{
+  background: rgba(37,99,235,.18);
+  color: #dbeafe;
+}
+.table tbody tr:hover{
+  background: rgba(37,99,235,.10);
+}
+
+/* 경기 카드 */
+.matchRow{
+  background: rgba(15,23,42,.9);
+  border: 1px solid rgba(96,165,250,.18);
+}
+.matchRow.played{
+  background:
+    linear-gradient(90deg,
+      rgba(37,99,235,.22),
+      rgba(15,23,42,.9) 35%);
+}
+
+/* 버튼 (주요 액션) */
+button{
+  background:
+    linear-gradient(135deg,
+      var(--blue-main),
+      #1e40af);
+  border: 1px solid rgba(147,197,253,.45);
+  color: #eff6ff;
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.5),
+    0 0 18px var(--blue-glow);
+}
+button:hover{
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+button.ghost{
+  background: rgba(37,99,235,.08);
+  box-shadow: none;
+}
+
+/* pill / 상태 표시 */
+.pill{
+  background: rgba(37,99,235,.18);
+  border: 1px solid rgba(96,165,250,.35);
+  color: #e0ecff;
+}
+.pill[data-kind="win"]{
+  background:
+    linear-gradient(135deg,
+      #2563eb,
+      #1e3a8a);
+}
+.pill[data-kind="hot"]{
+  background: rgba(37,99,235,.28);
+}
+
 
