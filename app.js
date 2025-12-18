@@ -1,4 +1,5 @@
-async function loadData() {
+
+     async function loadData() {
   const res = await fetch("matches.json", { cache: "no-store" });
   if (!res.ok) throw new Error("matches.json을 불러오지 못했어요.");
   return await res.json();
@@ -38,10 +39,11 @@ function renderTable(container, headers, rows) {
 }
 
 function renderMobileList(container, items) {
-  // 모바일 카드 리스트는 "추가"로 붙는다(PC에선 CSS로 안 보임)
+  // PC에서도 append는 되지만, CSS에서 .mList를 숨겨두었기 때문에 “표 밑 텍스트” 문제 없음
   const list = el("div", { class: "mList" });
   items.forEach(it => {
     const card = el("div", { class: "mItem" });
+
     const top = el("div", { class: "mTop" }, [
       el("div", { text: it.title }),
       el("div", { text: it.badge || "" })
@@ -80,6 +82,7 @@ function computeStandings(data) {
     else if (m.hg < m.ag) { A.W++; H.L++; A.PTS += rules.win; }
     else { H.D++; A.D++; H.PTS += rules.draw; A.PTS += rules.draw; }
   }
+
   Object.values(table).forEach(r => r.GD = r.GF - r.GA);
 
   return Object.values(table).sort((a,b) =>
@@ -150,6 +153,7 @@ function computeScorers(data) {
     a.team.localeCompare(b.team, "ko") ||
     a.name.localeCompare(b.name, "ko")
   );
+
   return rows;
 }
 
@@ -165,7 +169,7 @@ function renderStandings(container, standings) {
 
   const tbody = el("tbody");
   standings.forEach((r, i) => {
-    const tr = el("tr", { class: i === 0 ? "rank1" : "" });
+    const tr = el("tr");
 
     tr.appendChild(el("td", { text: String(i + 1) }));
 
@@ -190,7 +194,6 @@ function renderStandings(container, standings) {
   container.innerHTML = "";
   container.appendChild(table);
 
-  // 모바일 카드
   renderMobileList(container, standings.map((r, i) => ({
     title: `${i+1}위 · ${r.team}`,
     badge: `${r.PTS}점`,
@@ -213,10 +216,7 @@ function renderSchedule(container, data, opts = {}) {
     groups[m.round].push(m);
   });
 
-  const rounds = Object.keys(groups)
-    .map(Number)
-    .sort((a,b)=>a-b)
-    .filter(r => r <= maxRounds);
+  const rounds = Object.keys(groups).map(Number).sort((a,b)=>a-b).filter(r => r <= maxRounds);
 
   container.innerHTML = "";
   rounds.forEach(round => {
@@ -242,8 +242,6 @@ function renderSchedule(container, data, opts = {}) {
 
 function renderTeamGoals(container, rows) {
   renderTable(container, ["순위","팀","총 득점"], rows.map((r, i) => [i+1, r.team, r.gf]));
-
-  // 모바일 카드
   renderMobileList(container, rows.map((r, i) => ({
     title: `${i+1}위 · ${r.team}`,
     badge: `${r.gf}골`,
@@ -257,8 +255,6 @@ function renderTopScorers(container, rows) {
     return;
   }
   renderTable(container, ["순위","선수","팀","골"], rows.map((r, i) => [i+1, r.name, r.team, r.goals]));
-
-  // 모바일 카드
   renderMobileList(container, rows.map((r, i) => ({
     title: `${i+1}위 · ${r.name}`,
     badge: `${r.goals}골`,
@@ -266,12 +262,12 @@ function renderTopScorers(container, rows) {
   })));
 }
 
-/* ------------------ Team page helpers ------------------ */
+/* ------------------ Team helpers ------------------ */
 function getTeamMatches(data, team) {
   return data.matches
     .filter(m => m.home === team || m.away === team)
     .slice()
-    .sort((a,b) => (a.round - b.round) || (a.id - b.id));
+    .sort((a,b) => (a.round - a.round) || (a.id - b.id));
 }
 
 function getTeamSummary(data, team) {
@@ -301,7 +297,7 @@ function getTeamTopScorers(data, team) {
   return rows;
 }
 
-/* ------------------ Mobile app tabbar ------------------ */
+/* ------------------ Mobile app tabbar + team sheet ------------------ */
 function injectTabbar(data, page){
   if (document.querySelector(".tabbar")) return;
 
@@ -330,6 +326,7 @@ function injectTabbar(data, page){
         openTeamSheet(data);
       });
     }
+
     inner.appendChild(a);
   }
 
@@ -381,12 +378,10 @@ async function boot() {
   const original = await loadData();
   let data = deepClone(original);
 
-  // standings (index)
   if (page === "standings") {
     const standings = computeStandings(data);
     renderStandings(document.querySelector("#standings"), standings);
 
-    // mini schedule + 더보기(라운드 단위)
     const box = document.querySelector("#miniSchedule");
     const btn = document.querySelector("#btnMoreMini");
     if (box) {
@@ -404,7 +399,6 @@ async function boot() {
     }
   }
 
-  // schedule
   if (page === "schedule") {
     const box = document.querySelector("#schedule");
     const btn = document.querySelector("#btnMore");
@@ -421,7 +415,6 @@ async function boot() {
     render();
   }
 
-  // stats
   if (page === "stats") {
     const status = computeTitleStatus(data);
     const remain = computeRemaining(data);
@@ -440,7 +433,6 @@ async function boot() {
     renderTopScorers(document.querySelector("#topScorers"), computeScorers(data));
   }
 
-  // team
   if (page === "team") {
     const params = new URLSearchParams(location.search);
     const team = params.get("team");
@@ -476,12 +468,11 @@ async function boot() {
         if (scorersBox) scorersBox.innerHTML = `<div class="small">아직 득점 기록이 없어.</div>`;
       } else {
         renderTable(scorersBox, ["순위","선수","골"], top.map((r,i)=>[i+1, r.name, r.goals]));
-        renderMobileList(scorersBox, top.map((r,i)=>({
-          title: `${i+1}위 · ${r.name}`, badge: `${r.goals}골`, kvs:[]
-        })));
+        renderMobileList(scorersBox, top.map((r,i)=>({ title:`${i+1}위 · ${r.name}`, badge:`${r.goals}골`, kvs:[] })));
       }
 
-      const tMatches = getTeamMatches(data, team);
+      const tMatches = data.matches.filter(m => m.home === team || m.away === team).slice()
+        .sort((a,b) => (a.round - b.round) || (a.id - b.id));
       if (!tMatches.length) {
         if (matchesBox) matchesBox.innerHTML = `<div class="small">경기가 없어.</div>`;
       } else {
@@ -502,10 +493,11 @@ async function boot() {
   if (nav && !nav.querySelector(".themeBtn")) {
     const btn = document.createElement("button");
     btn.className = "themeBtn";
+
     const themes = ["blue", "purple", "green", "red"];
     const labels = { blue:"블루", purple:"퍼플", green:"그린", red:"레드" };
-    btn.textContent = `테마: ${labels[savedTheme]}`;
 
+    btn.textContent = `테마: ${labels[savedTheme]}`;
     btn.onclick = () => {
       const current = html.getAttribute("data-theme") || "blue";
       const idx = themes.indexOf(current);
@@ -517,7 +509,7 @@ async function boot() {
     nav.appendChild(btn);
   }
 
-  // 모바일 앱 탭바(PC에선 CSS로 사실상 영향 없음)
+  // mobile app tabbar
   injectTabbar(data, page);
 }
 
@@ -527,4 +519,3 @@ window.addEventListener("DOMContentLoaded", () => {
     document.body.innerHTML = `<div style="padding:20px;color:#fff;">에러: ${err.message}</div>`;
   });
 });
-
