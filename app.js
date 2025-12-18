@@ -191,13 +191,33 @@ function renderStandings(container, standings) {
   const table = el("table", { class: "table" });
   const thead = el("thead");
   const trh = el("tr");
-  ["순위","팀","경기","승","무","패","득점","실점","득실","승점"].forEach(h => trh.appendChild(el("th", { text: h })));
+  ["순위","팀","경기","승","무","패","득점","실점","득실","승점"].forEach(h =>
+    trh.appendChild(el("th", { text: h }))
+  );
   thead.appendChild(trh);
 
   const tbody = el("tbody");
+
   standings.forEach((r, i) => {
     const tr = el("tr", { class: i === 0 ? "rank1" : "" });
-    [i+1, r.team, r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS].forEach(v => tr.appendChild(el("td", { text: String(v) })));
+
+    // 1) 순위
+    tr.appendChild(el("td", { text: String(i + 1) }));
+
+    // 2) 팀(링크)
+    const teamTd = document.createElement("td");
+    const a = document.createElement("a");
+    a.href = `team.html?team=${encodeURIComponent(r.team)}`;
+    a.textContent = r.team;
+    a.style.fontWeight = "900";
+    teamTd.appendChild(a);
+    tr.appendChild(teamTd);
+
+    // 3) 나머지 숫자들
+    [r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS].forEach(v => {
+      tr.appendChild(el("td", { text: String(v) }));
+    });
+
     tbody.appendChild(tr);
   });
 
@@ -206,6 +226,7 @@ function renderStandings(container, standings) {
   container.innerHTML = "";
   container.appendChild(table);
 }
+
 
 function renderSchedule(container, data, opts = {}) {
   const maxRounds = opts.maxRounds ?? Infinity;
