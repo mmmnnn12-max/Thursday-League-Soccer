@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thursday League Soccer  | 운영자</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="admin">
+  <div class="topbar">
+    <div class="nav">
+      <div class="brand">Thursday League Soccer</div>
+      <div class="menu">
+        <a href="index.html">순위</a>
+        <a href="schedule.html">일정</a>
+        <a href="admin.html">운영자</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>운영자 페이지</h1>
+    <div class="card">
+      <div class="small">
+        정적 사이트는 웹에서 파일을 “직접 저장”할 수 없어서,<br>
+        여기서 JSON을 복사한 다음 GitHub의 <b>matches.json</b> 파일에 붙여넣어 업데이트하는 방식이 제일 깔끔해.
+      </div>
+      <div style="height:10px"></div>
+
+      <textarea id="jsonOut"></textarea>
+
+      <div class="btns">
+        <button id="btnCopy">JSON 복사</button>
+        <button id="btnDownload">matches.json 다운로드</button>
+      </div>
+
+      <div class="small" style="margin-top:10px">
+        ✅ 업데이트 방법: GitHub → repo → <b>matches.json</b> → Edit → 붙여넣기 → Commit → 10~30초 후 사이트 반영
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
