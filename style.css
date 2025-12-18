@@ -134,263 +134,10 @@ button.ghost { background: rgba(233,238,252,.04); }
 .pill[data-kind="win"] { background: rgba(233,238,252,.10); }
 .pill[data-kind="hot"] { background: rgba(233,238,252,.08); }
 .pill[data-kind="neutral"] { background: rgba(233,238,252,.06); }
-/* ================================
-   BLUE × BLACK GLOBAL THEME
-   ================================ */
 
-/* 핵심 색 변수 */
-:root{
-  --blue-main: #2563eb;   /* 메인 블루 */
-  --blue-soft: #60a5fa;  /* 밝은 블루 */
-  --blue-glow: rgba(37,99,235,.35);
-
-  --black-0: #05060a;    /* 최외곽 배경 */
-  --black-1: #0a0f1f;    /* 기본 배경 */
-  --black-2: #0f172a;    /* 카드 배경 */
-
-  --line-blue: rgba(96,165,250,.22);
-}
-
-/* 전체 배경 */
-body{
-  background:
-    radial-gradient(800px 500px at 10% -10%, rgba(37,99,235,.18), transparent 60%),
-    radial-gradient(600px 400px at 100% 0%, rgba(96,165,250,.14), transparent 55%),
-    linear-gradient(180deg, var(--black-0), var(--black-1) 70%);
-  color: #e5edff;
-}
-
-/* 상단바 */
-.topbar{
-  background: rgba(10,15,31,.85);
-  border-bottom: 1px solid var(--line-blue);
-  backdrop-filter: blur(12px);
-}
-
-/* 브랜드 (타이틀) */
-.brand{
-  font-weight: 900;
-  color: #e5edff;
-}
-.brand::after{
-  content:"";
-  display:inline-block;
-  width:9px;
-  height:9px;
-  margin-left:8px;
-  border-radius:999px;
-  background: linear-gradient(135deg, var(--blue-main), var(--blue-soft));
-  box-shadow: 0 0 14px var(--blue-glow);
-}
-
-/* 카드 */
-.card{
-  background:
-    linear-gradient(180deg,
-      rgba(37,99,235,.08),
-      var(--black-2) 40%);
-  border: 1px solid var(--line-blue);
-  box-shadow:
-    0 20px 50px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.04);
-}
-
-/* 메뉴 버튼 */
-.menu a{
-  background: rgba(37,99,235,.08);
-  border: 1px solid rgba(96,165,250,.25);
-  color: #e5edff;
-}
-.menu a:hover{
-  background: rgba(37,99,235,.18);
-  box-shadow: 0 8px 24px rgba(0,0,0,.45);
-  transform: translateY(-1px);
-}
-
-/* 테이블 */
-.table thead th{
-  background: rgba(37,99,235,.18);
-  color: #dbeafe;
-}
-.table tbody tr:hover{
-  background: rgba(37,99,235,.10);
-}
-
-/* 경기 카드 */
-.matchRow{
-  background: rgba(15,23,42,.9);
-  border: 1px solid rgba(96,165,250,.18);
-}
-.matchRow.played{
-  background:
-    linear-gradient(90deg,
-      rgba(37,99,235,.22),
-      rgba(15,23,42,.9) 35%);
-}
-
-/* 버튼 (주요 액션) */
-button{
-  background:
-    linear-gradient(135deg,
-      var(--blue-main),
-      #1e40af);
-  border: 1px solid rgba(147,197,253,.45);
-  color: #eff6ff;
-  box-shadow:
-    0 14px 30px rgba(0,0,0,.5),
-    0 0 18px var(--blue-glow);
-}
-button:hover{
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-button.ghost{
-  background: rgba(37,99,235,.08);
-  box-shadow: none;
-}
-
-/* pill / 상태 표시 */
-.pill{
-  background: rgba(37,99,235,.18);
-  border: 1px solid rgba(96,165,250,.35);
-  color: #e0ecff;
-}
-.pill[data-kind="win"]{
-  background:
-    linear-gradient(135deg,
-      #2563eb,
-      #1e3a8a);
-}
-.pill[data-kind="hot"]{
-  background: rgba(37,99,235,.28);
-}
-/* ================================
-   EXTRA: LEADER HIGHLIGHT + ANIM + THEMES
-   ================================ */
-
-/* 1위 강조 (순위표 1등 줄) */
-tr.rank1{
-  background: linear-gradient(90deg, rgba(37,99,235,.28), rgba(15,23,42,.0) 70%);
-}
-tr.rank1 td{
-  font-weight: 900;
-}
-tr.rank1 td:first-child{
-  position: relative;
-}
-tr.rank1 td:first-child::after{
-  content:"";
-  position:absolute;
-  right:-6px; top:50%;
-  width:10px; height:10px;
-  transform: translateY(-50%);
-  border-radius:999px;
-  background: linear-gradient(135deg, var(--blue-main), var(--blue-soft));
-  box-shadow: 0 0 16px var(--blue-glow);
-}
-
-/* 우승 확정(🏆) 네온 글로우 애니메이션 */
-@keyframes neonGlow {
-  0%   { box-shadow: 0 0 0 rgba(37,99,235,0), 0 0 14px rgba(37,99,235,.25); }
-  50%  { box-shadow: 0 0 0 rgba(37,99,235,0), 0 0 24px rgba(96,165,250,.55); }
-  100% { box-shadow: 0 0 0 rgba(37,99,235,0), 0 0 14px rgba(37,99,235,.25); }
-}
-.pill[data-kind="win"]{
-  animation: neonGlow 1.8s ease-in-out infinite;
-}
-
-/* 득점왕 카드 컬러 반전(포인트 카드) */
-.accentCard{
-  background:
-    radial-gradient(600px 300px at 10% 0%, rgba(37,99,235,.22), transparent 55%),
-    linear-gradient(180deg, rgba(37,99,235,.16), rgba(15,23,42,.92));
-  border: 1px solid rgba(147,197,253,.38);
-}
-.accentCard h2{
-  color: #dbeafe;
-}
-.accentCard .table thead th{
-  background: rgba(37,99,235,.28);
-}
-
-/* 테마 스위치 버튼 */
-.themeBtn{
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(96,165,250,.25);
-  background: rgba(37,99,235,.10);
-  color: #e5edff;
-  font-weight: 900;
-  font-size: 13px;
-}
-.themeBtn:hover{
-  background: rgba(37,99,235,.18);
-  transform: translateY(-1px);
-}
-
-/* ----------------
-   MULTI THEME SYSTEM
-   (html[data-theme="..."] 로 색만 교체)
-   ---------------- */
-html[data-theme="blue"]{
-  --blue-main:#2563eb; --blue-soft:#60a5fa; --blue-glow:rgba(37,99,235,.35);
-  --black-0:#05060a; --black-1:#0a0f1f; --black-2:#0f172a;
-  --line-blue:rgba(96,165,250,.22);
-}
-html[data-theme="purple"]{
-  --blue-main:#7c3aed; --blue-soft:#a78bfa; --blue-glow:rgba(124,58,237,.35);
-  --black-0:#05060a; --black-1:#0c0716; --black-2:#140b2a;
-  --line-blue:rgba(167,139,250,.22);
-}
-html[data-theme="green"]{
-  --blue-main:#16a34a; --blue-soft:#4ade80; --blue-glow:rgba(22,163,74,.30);
-  --black-0:#05060a; --black-1:#07140c; --black-2:#0b2214;
-  --line-blue:rgba(74,222,128,.20);
-}
-html[data-theme="red"]{
-  --blue-main:#ef4444; --blue-soft:#fb7185; --blue-glow:rgba(239,68,68,.30);
-  --black-0:#05060a; --black-1:#16070a; --black-2:#2a0b12;
-  --line-blue:rgba(251,113,133,.20);
-}
-
-/* 위 테마 변수로 기존 블루블랙 스타일도 자동 변형되게 덮어쓰기 */
-body{
-  background:
-    radial-gradient(800px 500px at 10% -10%, color-mix(in oklab, var(--blue-main) 18%, transparent), transparent 60%),
-    radial-gradient(600px 400px at 100% 0%, color-mix(in oklab, var(--blue-soft) 14%, transparent), transparent 55%),
-    linear-gradient(180deg, var(--black-0), var(--black-1) 70%);
-}
-.topbar{
-  background: color-mix(in oklab, var(--black-1) 80%, transparent);
-  border-bottom: 1px solid var(--line-blue);
-}
-.card{
-  background: linear-gradient(180deg, color-mix(in oklab, var(--blue-main) 10%, var(--black-2)), var(--black-2) 55%);
-  border: 1px solid var(--line-blue);
-}
-.menu a{
-  background: color-mix(in oklab, var(--blue-main) 12%, transparent);
-  border: 1px solid var(--line-blue);
-}
-button{
-  background: linear-gradient(135deg, var(--blue-main), color-mix(in oklab, var(--blue-main) 45%, #000));
-  border: 1px solid color-mix(in oklab, var(--blue-soft) 55%, transparent);
-  box-shadow: 0 14px 30px rgba(0,0,0,.5), 0 0 18px var(--blue-glow);
-}
-.table thead th{ background: color-mix(in oklab, var(--blue-main) 28%, transparent); }
-.matchRow{ border: 1px solid color-mix(in oklab, var(--blue-soft) 22%, transparent); }
-.matchRow.played{
-  background: linear-gradient(90deg, color-mix(in oklab, var(--blue-main) 26%, transparent), rgba(15,23,42,.9) 40%);
-}
-.pill{
-  background: color-mix(in oklab, var(--blue-main) 18%, transparent);
-  border: 1px solid color-mix(in oklab, var(--blue-soft) 40%, transparent);
-}
-.pill[data-kind="win"]{
-  background: linear-gradient(135deg, var(--blue-main), color-mix(in oklab, var(--blue-main) 45%, #000));
-}
 .center{ display:flex; justify-content:center; }
-/* 팀 링크 UI */
+
+/* 클릭 가능한 팀 링크 */
 .teamLink{
   display: inline-flex;
   align-items: center;
@@ -400,67 +147,35 @@ button{
   border: 1px solid rgba(96,165,250,.18);
   background: rgba(37,99,235,.06);
   font-weight: 900;
+  white-space: nowrap; /* 줄바꿈 방지 */
 }
 .teamLink:hover{
   background: rgba(37,99,235,.16);
   border-color: rgba(96,165,250,.35);
   transform: translateY(-1px);
 }
-.teamLink .icon{
-  opacity: .85;
-  font-size: 12px;
-}
-.teamLink{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(96,165,250,.18);
-  background: rgba(37,99,235,.06);
-  font-weight: 900;
+.teamLink .icon{ opacity: .85; font-size: 12px; }
 
-  white-space: nowrap;   /* 🔥 이게 핵심 */
-}
 /* ================================
-   MOBILE OPTIMIZATION
+   MOBILE + APP LIKE (ONLY MOBILE)
    ================================ */
 @media (max-width: 520px){
-
   .container{ padding: 14px; }
+  h1{ font-size: 22px; }
+  .brand{ font-size: 14px; }
 
-  /* 상단 네비: 탭처럼 가로 스크롤 */
-  .nav{
-    gap: 10px;
-    align-items: flex-start;
-  }
-  .menu{
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 6px;
-    flex-wrap: nowrap;
-  }
-  .menu a{
-    flex: 0 0 auto;
-    padding: 10px 12px;
-    font-size: 14px;
+  /* 상단 메뉴는 숨기고 하단 탭바 사용 */
+  .menu{ display:none; }
+
+  /* 탭바 여백 */
+  body{
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
 
-  /* 버튼/입력 터치 영역 키우기 */
-  button, input, select{
-    padding: 12px 14px;
-    border-radius: 16px;
-    font-size: 14px;
-  }
+  /* 테이블은 숨기고 카드 UI로 */
+  .table{ display:none; }
 
-  /* 테이블: 모바일에선 숨기고 카드형으로 */
-  .table{
-    display: none;
-  }
-
-  /* 모바일 카드형 표(우리가 JS로 만들어 넣을 거) */
-  .mList{ display: flex; flex-direction: column; gap: 10px; }
+  .mList{ display:flex; flex-direction: column; gap: 10px; }
   .mItem{
     background: rgba(233,238,252,.04);
     border: 1px solid rgba(233,238,252,.12);
@@ -483,6 +198,92 @@ button{
   .kv{ display:flex; justify-content: space-between; gap: 10px; }
   .k{ opacity: .75; font-weight: 800; }
   .v{ font-weight: 900; }
+
+  /* 하단 탭바 */
+  .tabbar{
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 0;
+    z-index: 100;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(10,15,31,.92);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(96,165,250,.22);
+  }
+  .tabbarInner{
+    max-width: var(--w);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .tab{
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+    gap: 6px;
+    padding: 10px 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(96,165,250,.14);
+    background: rgba(37,99,235,.06);
+    font-weight: 900;
+    font-size: 12px;
+    color: #e5edff;
+  }
+  .tab .ico{ font-size: 16px; line-height: 1; opacity: .9; }
+  .tab.active{
+    background: rgba(37,99,235,.22);
+    border-color: rgba(96,165,250,.35);
+    box-shadow: 0 0 18px rgba(37,99,235,.22);
+  }
+
+  /* 팀 선택 바텀시트 */
+  .sheetOverlay{
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(0,0,0,.55);
+    display:none;
+  }
+  .sheetOverlay.show{ display:block; }
+  .sheet{
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(10,15,31,.96);
+    border-top: 1px solid rgba(96,165,250,.22);
+    border-radius: 22px 22px 0 0;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    max-width: var(--w);
+    margin: 0 auto;
+  }
+  .sheetTop{
+    display:flex; align-items:center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .sheetTitle{ font-weight: 900; font-size: 14px; }
+  .sheetClose{
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(233,238,252,.12);
+    background: rgba(233,238,252,.06);
+    font-weight: 900;
+    color:#e9eefc;
+  }
+  .teamGrid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .teamBtn{
+    padding: 12px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(96,165,250,.22);
+    background: rgba(37,99,235,.10);
+    font-weight: 900;
+    text-align: center;
+    color:#e9eefc;
+  }
 }
 
 
