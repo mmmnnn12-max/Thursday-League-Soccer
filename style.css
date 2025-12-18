@@ -264,5 +264,130 @@ button.ghost{
 .pill[data-kind="hot"]{
   background: rgba(37,99,235,.28);
 }
+/* ================================
+   EXTRA: LEADER HIGHLIGHT + ANIM + THEMES
+   ================================ */
+
+/* 1위 강조 (순위표 1등 줄) */
+tr.rank1{
+  background: linear-gradient(90deg, rgba(37,99,235,.28), rgba(15,23,42,.0) 70%);
+}
+tr.rank1 td{
+  font-weight: 900;
+}
+tr.rank1 td:first-child{
+  position: relative;
+}
+tr.rank1 td:first-child::after{
+  content:"";
+  position:absolute;
+  right:-6px; top:50%;
+  width:10px; height:10px;
+  transform: translateY(-50%);
+  border-radius:999px;
+  background: linear-gradient(135deg, var(--blue-main), var(--blue-soft));
+  box-shadow: 0 0 16px var(--blue-glow);
+}
+
+/* 우승 확정(🏆) 네온 글로우 애니메이션 */
+@keyframes neonGlow {
+  0%   { box-shadow: 0 0 0 rgba(37,99,235,0), 0 0 14px rgba(37,99,235,.25); }
+  50%  { box-shadow: 0 0 0 rgba(37,99,235,0), 0 0 24px rgba(96,165,250,.55); }
+  100% { box-shadow: 0 0 0 rgba(37,99,235,0), 0 0 14px rgba(37,99,235,.25); }
+}
+.pill[data-kind="win"]{
+  animation: neonGlow 1.8s ease-in-out infinite;
+}
+
+/* 득점왕 카드 컬러 반전(포인트 카드) */
+.accentCard{
+  background:
+    radial-gradient(600px 300px at 10% 0%, rgba(37,99,235,.22), transparent 55%),
+    linear-gradient(180deg, rgba(37,99,235,.16), rgba(15,23,42,.92));
+  border: 1px solid rgba(147,197,253,.38);
+}
+.accentCard h2{
+  color: #dbeafe;
+}
+.accentCard .table thead th{
+  background: rgba(37,99,235,.28);
+}
+
+/* 테마 스위치 버튼 */
+.themeBtn{
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(96,165,250,.25);
+  background: rgba(37,99,235,.10);
+  color: #e5edff;
+  font-weight: 900;
+  font-size: 13px;
+}
+.themeBtn:hover{
+  background: rgba(37,99,235,.18);
+  transform: translateY(-1px);
+}
+
+/* ----------------
+   MULTI THEME SYSTEM
+   (html[data-theme="..."] 로 색만 교체)
+   ---------------- */
+html[data-theme="blue"]{
+  --blue-main:#2563eb; --blue-soft:#60a5fa; --blue-glow:rgba(37,99,235,.35);
+  --black-0:#05060a; --black-1:#0a0f1f; --black-2:#0f172a;
+  --line-blue:rgba(96,165,250,.22);
+}
+html[data-theme="purple"]{
+  --blue-main:#7c3aed; --blue-soft:#a78bfa; --blue-glow:rgba(124,58,237,.35);
+  --black-0:#05060a; --black-1:#0c0716; --black-2:#140b2a;
+  --line-blue:rgba(167,139,250,.22);
+}
+html[data-theme="green"]{
+  --blue-main:#16a34a; --blue-soft:#4ade80; --blue-glow:rgba(22,163,74,.30);
+  --black-0:#05060a; --black-1:#07140c; --black-2:#0b2214;
+  --line-blue:rgba(74,222,128,.20);
+}
+html[data-theme="red"]{
+  --blue-main:#ef4444; --blue-soft:#fb7185; --blue-glow:rgba(239,68,68,.30);
+  --black-0:#05060a; --black-1:#16070a; --black-2:#2a0b12;
+  --line-blue:rgba(251,113,133,.20);
+}
+
+/* 위 테마 변수로 기존 블루블랙 스타일도 자동 변형되게 덮어쓰기 */
+body{
+  background:
+    radial-gradient(800px 500px at 10% -10%, color-mix(in oklab, var(--blue-main) 18%, transparent), transparent 60%),
+    radial-gradient(600px 400px at 100% 0%, color-mix(in oklab, var(--blue-soft) 14%, transparent), transparent 55%),
+    linear-gradient(180deg, var(--black-0), var(--black-1) 70%);
+}
+.topbar{
+  background: color-mix(in oklab, var(--black-1) 80%, transparent);
+  border-bottom: 1px solid var(--line-blue);
+}
+.card{
+  background: linear-gradient(180deg, color-mix(in oklab, var(--blue-main) 10%, var(--black-2)), var(--black-2) 55%);
+  border: 1px solid var(--line-blue);
+}
+.menu a{
+  background: color-mix(in oklab, var(--blue-main) 12%, transparent);
+  border: 1px solid var(--line-blue);
+}
+button{
+  background: linear-gradient(135deg, var(--blue-main), color-mix(in oklab, var(--blue-main) 45%, #000));
+  border: 1px solid color-mix(in oklab, var(--blue-soft) 55%, transparent);
+  box-shadow: 0 14px 30px rgba(0,0,0,.5), 0 0 18px var(--blue-glow);
+}
+.table thead th{ background: color-mix(in oklab, var(--blue-main) 28%, transparent); }
+.matchRow{ border: 1px solid color-mix(in oklab, var(--blue-soft) 22%, transparent); }
+.matchRow.played{
+  background: linear-gradient(90deg, color-mix(in oklab, var(--blue-main) 26%, transparent), rgba(15,23,42,.9) 40%);
+}
+.pill{
+  background: color-mix(in oklab, var(--blue-main) 18%, transparent);
+  border: 1px solid color-mix(in oklab, var(--blue-soft) 40%, transparent);
+}
+.pill[data-kind="win"]{
+  background: linear-gradient(135deg, var(--blue-main), color-mix(in oklab, var(--blue-main) 45%, #000));
+}
 
 
