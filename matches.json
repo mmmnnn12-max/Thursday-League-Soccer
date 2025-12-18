@@ -1,6 +1,19 @@
 {
   "teams": ["팀임태원", "팀이현준", "팀윤하준", "팀조민규"],
   "rules": { "win": 3, "draw": 1, "loss": 0 },
+  "players": [
+    { "id": "p1", "team": "팀임태원", "name": "선수1" },
+    { "id": "p2", "team": "팀임태원", "name": "선수2" },
+
+    { "id": "p3", "team": "팀이현준", "name": "선수1" },
+    { "id": "p4", "team": "팀이현준", "name": "선수2" },
+
+    { "id": "p5", "team": "팀윤하준", "name": "선수1" },
+    { "id": "p6", "team": "팀윤하준", "name": "선수2" },
+
+    { "id": "p7", "team": "팀조민규", "name": "선수1" },
+    { "id": "p8", "team": "팀조민규", "name": "선수2" }
+  ],
   "matches": [
     { "id": 1, "round": 1, "home": "팀임태원", "away": "팀이현준", "hg": null, "ag": null, "date": "" },
     { "id": 2, "round": 1, "home": "팀윤하준", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
@@ -10,5 +23,6 @@
 
     { "id": 5, "round": 3, "home": "팀임태원", "away": "팀조민규", "hg": null, "ag": null, "date": "" },
     { "id": 6, "round": 3, "home": "팀이현준", "away": "팀윤하준", "hg": null, "ag": null, "date": "" }
-  ]
+  ],
+  "goals": []
 }
