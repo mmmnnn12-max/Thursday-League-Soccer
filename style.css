@@ -389,5 +389,6 @@ button{
 .pill[data-kind="win"]{
   background: linear-gradient(135deg, var(--blue-main), color-mix(in oklab, var(--blue-main) 45%, #000));
 }
+.center{ display:flex; justify-content:center; }
 
 
