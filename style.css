@@ -38,8 +38,11 @@ body{
     var(--bg1);
 }
 
-/* PC 기본: 모바일 카드 숨김 (← 너가 겪은 “표 아래 텍스트” 해결 핵심) */
+/* PC 기본: 모바일 카드 숨김 */
 .mList { display: none; }
+
+/* ✅ PC 기본: 모바일 탭바/시트(오버레이) 숨김 */
+.tabbar, .sheetOverlay { display: none; }
 
 .container { max-width: var(--w); margin: 0 auto; padding: 18px; }
 
@@ -192,6 +195,9 @@ button.ghost{ background: rgba(233,238,252,.04); }
    ================================ */
 @media (max-width: 520px){
 
+  /* ✅ 모바일에서만 탭바/오버레이 보이게 */
+  .tabbar, .sheetOverlay { display: block; }
+
   .container{ padding: 14px; }
   h1{ font-size: 22px; }
   .brand{ font-size: 14px; }
@@ -281,7 +287,7 @@ button.ghost{ background: rgba(233,238,252,.04); }
     inset: 0;
     z-index: 120;
     background: rgba(0,0,0,.55);
-    display:none;
+    display:none; /* 기본은 숨김 */
   }
   .sheetOverlay.show{ display:block; }
 
