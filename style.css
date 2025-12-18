@@ -189,6 +189,44 @@ button.ghost{ background: rgba(233,238,252,.04); }
   transform: translateY(-1px);
 }
 .teamLink .icon{ opacity: .85; font-size: 12px; }
+/* ================================
+   FORM (최근 3경기)
+   ================================ */
+.formRow{
+  margin-top: 10px;
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.formLabel{
+  font-size: 13px;
+  opacity: .85;
+  font-weight: 900;
+}
+.formDots{
+  display:inline-flex;
+  gap: 8px;
+  align-items:center;
+}
+.formDot{
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(233,238,252,.18);
+  background: rgba(233,238,252,.10);
+}
+.formDot[data-r="W"]{ background: rgba(34,197,94,.35); border-color: rgba(34,197,94,.55); }
+.formDot[data-r="D"]{ background: rgba(148,163,184,.25); border-color: rgba(148,163,184,.45); }
+.formDot[data-r="L"]{ background: rgba(239,68,68,.30);  border-color: rgba(239,68,68,.55); }
+.formDot[data-r="N"]{ background: rgba(233,238,252,.10); border-color: rgba(233,238,252,.18); }
+
+.formText{
+  font-size: 12.5px;
+  opacity: .85;
+  font-weight: 800;
+}
+
 
 /* ================================
    MOBILE (APP-LIKE)
