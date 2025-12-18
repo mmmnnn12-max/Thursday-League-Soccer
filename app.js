@@ -264,10 +264,35 @@ async function boot() {
   let data = deepClone(original);
 
   if (page === "standings") {
-    const standings = computeStandings(data);
-    renderStandings(document.querySelector("#standings"), standings);
-    renderSchedule(document.querySelector("#miniSchedule"), data);
+  const standings = computeStandings(data);
+  renderStandings(document.querySelector("#standings"), standings);
+
+  const box = document.querySelector("#miniSchedule");
+  const btn = document.querySelector("#btnMoreMini");
+
+  // round 목록
+  const allRounds = Array.from(new Set(data.matches.map(m => m.round))).sort((a,b)=>a-b);
+
+  let shown = 2; // 처음엔 2라운드까지만 보이게(원하면 1로 바꿔도 됨)
+
+  const renderMini = () => {
+    const maxRound = allRounds[Math.min(shown, allRounds.length) - 1];
+    renderSchedule(box, data, { maxRounds: maxRound });
+
+    if (btn) {
+      btn.style.display = (shown >= allRounds.length) ? "none" : "inline-block";
+    }
+  };
+
+  if (btn) {
+    btn.onclick = () => {
+      shown += 1;     // 더보기 누를 때마다 1라운드 추가 (원하면 2로 바꿔도 됨)
+      renderMini();
+    };
   }
+
+  renderMini();
+}
 
   if (page === "schedule") {
   const box = document.querySelector("#schedule");
