@@ -8,6 +8,46 @@ function deepClone(x) {
   return JSON.parse(JSON.stringify(x));
 }
 
+function getTeamMatches(data, team) {
+  return data.matches
+    .filter(m => m.home === team || m.away === team)
+    .slice()
+    .sort((a,b) => (a.round - b.round) || (a.id - b.id));
+}
+
+function getTeamSummary(data, team) {
+  const standings = computeStandings(data);
+  const row = standings.find(r => r.team === team);
+
+  if (!row) return null;
+
+  const rank = standings.findIndex(r => r.team === team) + 1;
+
+  return {
+    rank,
+    ...row
+  };
+}
+
+function getTeamTopScorers(data, team) {
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const score = new Map(); // playerId -> goals
+
+  for (const g of (data.goals || [])) {
+    const p = playersById.get(g.playerId);
+    if (!p || p.team !== team) continue;
+    score.set(g.playerId, (score.get(g.playerId) || 0) + (g.count || 0));
+  }
+
+  const rows = Array.from(score.entries()).map(([playerId, goals]) => {
+    const p = playersById.get(playerId);
+    return { name: p.name, goals };
+  });
+
+  rows.sort((a,b) => (b.goals - a.goals) || a.name.localeCompare(b.name, "ko"));
+  return rows;
+}
+
 function computeStandings(data) {
   const { teams, rules, matches } = data;
   const table = {};
@@ -293,6 +333,56 @@ async function boot() {
 
   renderMini();
 }
+
+  if (page === "team") {
+  const params = new URLSearchParams(location.search);
+  const team = params.get("team");
+
+  const title = document.querySelector("#teamTitle");
+  const summaryBox = document.querySelector("#teamSummary");
+  const scorersBox = document.querySelector("#teamScorers");
+  const matchesBox = document.querySelector("#teamMatches");
+
+  if (!team) {
+    title.textContent = "팀";
+    summaryBox.innerHTML = `<div class="small">team 파라미터가 없어. 예: team.html?team=팀임태원</div>`;
+    scorersBox.innerHTML = `<div class="small">-</div>`;
+    matchesBox.innerHTML = `<div class="small">-</div>`;
+  } else {
+    title.textContent = team;
+
+    const s = getTeamSummary(data, team);
+    if (!s) {
+      summaryBox.innerHTML = `<div class="small">팀을 찾을 수 없어: ${team}</div>`;
+    } else {
+      summaryBox.innerHTML = `
+        <div class="small">
+          <b>${s.rank}위</b> · 승점 <b>${s.PTS}</b><br/>
+          ${s.P}경기 ${s.W}승 ${s.D}무 ${s.L}패<br/>
+          득점 ${s.GF} / 실점 ${s.GA} / 득실 ${s.GD}
+        </div>
+      `;
+    }
+
+    const top = getTeamTopScorers(data, team);
+    if (!top.length) {
+      scorersBox.innerHTML = `<div class="small">아직 득점 기록이 없어.</div>`;
+    } else {
+      renderTable(scorersBox, ["순위", "선수", "골"], top.map((r,i)=>[i+1, r.name, r.goals]));
+    }
+
+    // 경기 목록(팀 포함된 것만)
+    const tMatches = getTeamMatches(data, team);
+    if (!tMatches.length) {
+      matchesBox.innerHTML = `<div class="small">경기가 없어.</div>`;
+    } else {
+      // round별 카드로 보기 좋게
+      const temp = { ...data, matches: tMatches };
+      renderSchedule(matchesBox, temp);
+    }
+  }
+}
+
 
   if (page === "schedule") {
   const box = document.querySelector("#schedule");
