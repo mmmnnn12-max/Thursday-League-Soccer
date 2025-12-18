@@ -4,6 +4,10 @@ async function loadData() {
   return await res.json();
 }
 
+function deepClone(x) {
+  return JSON.parse(JSON.stringify(x));
+}
+
 function computeStandings(data) {
   const { teams, rules, matches } = data;
   const table = {};
@@ -11,7 +15,6 @@ function computeStandings(data) {
 
   for (const m of matches) {
     if (m.hg === null || m.ag === null) continue;
-
     const H = table[m.home], A = table[m.away];
     H.P++; A.P++;
     H.GF += m.hg; H.GA += m.ag;
@@ -24,7 +27,6 @@ function computeStandings(data) {
 
   Object.values(table).forEach(r => r.GD = r.GF - r.GA);
 
-  // 승점 → 득실차 → 다득점 → 이름
   return Object.values(table).sort((a,b) =>
     (b.PTS - a.PTS) || (b.GD - a.GD) || (b.GF - a.GF) || a.team.localeCompare(b.team, "ko")
   );
@@ -43,6 +45,77 @@ function computeTeamGoals(data) {
     .sort((a,b) => (b.gf - a.gf) || a.team.localeCompare(b.team, "ko"));
 }
 
+function computeRemaining(data) {
+  const total = data.matches.length;
+  const played = data.matches.filter(m => m.hg !== null && m.ag !== null).length;
+  return { total, played, remaining: total - played };
+}
+
+// “우승 확정” 판단(간단 버전): 현재 1위의 승점이 2위의 최대 가능 승점보다 크면 확정
+function computeTitleStatus(data) {
+  const standings = computeStandings(data);
+  const { rules } = data;
+  const { remaining } = computeRemaining(data);
+
+  if (standings.length < 2) return { text: "데이터 부족", kind: "neutral" };
+
+  const leader = standings[0];
+  const runner = standings[1];
+
+  // 각 팀별 남은 경기 수 계산
+  const left = {};
+  data.teams.forEach(t => left[t] = 0);
+  for (const m of data.matches) {
+    if (m.hg !== null && m.ag !== null) continue;
+    left[m.home]++; left[m.away]++;
+  }
+
+  const leaderMax = leader.PTS + left[leader.team] * rules.win;
+  const runnerMax = runner.PTS + left[runner.team] * rules.win;
+
+  if (leader.PTS > runnerMax) {
+    return { text: `🏆 ${leader.team} 우승 확정!`, kind: "win" };
+  }
+  if (remaining === 0) {
+    return { text: `🏁 리그 종료 · 우승: ${leader.team}`, kind: "win" };
+  }
+  return { text: `🔥 우승 경쟁 중 · 현재 1위: ${leader.team} (최대 ${leaderMax}점)`, kind: "hot" };
+}
+
+function computeScorers(data) {
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const score = new Map(); // playerId -> goals
+
+  for (const g of (data.goals || [])) {
+    if (!playersById.has(g.playerId)) continue;
+    score.set(g.playerId, (score.get(g.playerId) || 0) + (g.count || 0));
+  }
+
+  const rows = Array.from(score.entries()).map(([playerId, goals]) => {
+    const p = playersById.get(playerId);
+    return { playerId, name: p.name, team: p.team, goals };
+  });
+
+  rows.sort((a,b) =>
+    (b.goals - a.goals) ||
+    a.team.localeCompare(b.team, "ko") ||
+    a.name.localeCompare(b.name, "ko")
+  );
+
+  return rows;
+}
+
+function coverageGoals(data) {
+  // 경기별로 goals가 얼마나 입력됐는지(스코어와 합이 맞는지) 확인
+  const byMatch = new Map();
+  for (const g of (data.goals || [])) {
+    byMatch.set(g.matchId, (byMatch.get(g.matchId) || 0) + (g.count || 0));
+  }
+  const played = data.matches.filter(m => m.hg !== null && m.ag !== null);
+  const ok = played.filter(m => (byMatch.get(m.id) || 0) === (m.hg + m.ag)).length;
+  return { played: played.length, ok };
+}
+
 function el(tag, attrs={}, children=[]) {
   const node = document.createElement(tag);
   for (const [k,v] of Object.entries(attrs)) {
@@ -54,17 +127,17 @@ function el(tag, attrs={}, children=[]) {
   return node;
 }
 
-function renderStandings(container, standings) {
+function renderTable(container, headers, rows) {
   const table = el("table", { class: "table" });
   const thead = el("thead");
-  const headRow = el("tr");
-  ["순위","팀","경기","승","무","패","득점","실점","득실","승점"].forEach(h => headRow.appendChild(el("th", { text: h })));
-  thead.appendChild(headRow);
+  const trh = el("tr");
+  headers.forEach(h => trh.appendChild(el("th", { text: h })));
+  thead.appendChild(trh);
 
   const tbody = el("tbody");
-  standings.forEach((r, i) => {
+  rows.forEach(r => {
     const tr = el("tr");
-    [i+1, r.team, r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS].forEach(v => tr.appendChild(el("td", { text: String(v) })));
+    r.forEach(cell => tr.appendChild(el("td", { text: String(cell) })));
     tbody.appendChild(tr);
   });
 
@@ -72,6 +145,14 @@ function renderStandings(container, standings) {
   table.appendChild(tbody);
   container.innerHTML = "";
   container.appendChild(table);
+}
+
+function renderStandings(container, standings) {
+  renderTable(
+    container,
+    ["순위","팀","경기","승","무","패","득점","실점","득실","승점"],
+    standings.map((r, i) => [i+1, r.team, r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS])
+  );
 }
 
 function renderSchedule(container, data) {
@@ -90,7 +171,8 @@ function renderSchedule(container, data) {
     for (const m of groups[round]) {
       const score = (m.hg === null || m.ag === null) ? "미정" : `${m.hg} : ${m.ag}`;
       const date = (m.date && m.date.trim()) ? ` · ${m.date}` : "";
-      list.appendChild(el("div", { class: "matchRow" }, [
+      const played = (m.hg !== null && m.ag !== null);
+      list.appendChild(el("div", { class: "matchRow" + (played ? " played" : "") }, [
         el("div", { class: "matchTeams", text: `${m.home} vs ${m.away}` }),
         el("div", { class: "matchMeta", text: `${score}${date}` })
       ]));
@@ -102,28 +184,64 @@ function renderSchedule(container, data) {
 }
 
 function renderTeamGoals(container, rows) {
-  const table = el("table", { class: "table" });
-  const thead = el("thead");
-  const headRow = el("tr");
-  ["순위","팀","총 득점"].forEach(h => headRow.appendChild(el("th", { text: h })));
-  thead.appendChild(headRow);
+  renderTable(container, ["순위","팀","총 득점"], rows.map((r, i) => [i+1, r.team, r.gf]));
+}
 
-  const tbody = el("tbody");
-  rows.forEach((r, i) => {
-    const tr = el("tr");
-    [i+1, r.team, r.gf].forEach(v => tr.appendChild(el("td", { text: String(v) })));
-    tbody.appendChild(tr);
-  });
+function renderTopScorers(container, rows) {
+  if (!rows.length) {
+    container.innerHTML = `<div class="small">아직 득점자가 입력되지 않았어.</div>`;
+    return;
+  }
+  renderTable(container, ["순위","선수","팀","골"], rows.map((r, i) => [i+1, r.name, r.team, r.goals]));
+}
 
-  table.appendChild(thead);
-  table.appendChild(tbody);
-  container.innerHTML = "";
-  container.appendChild(table);
+/* ------------------ Admin logic (폼 입력 → JSON 생성) ------------------ */
+function fmtMatchLabel(m) {
+  const score = (m.hg === null || m.ag === null) ? "미정" : `${m.hg}:${m.ag}`;
+  const date = (m.date && m.date.trim()) ? ` · ${m.date}` : "";
+  return `#${m.id} (R${m.round}) ${m.home} vs ${m.away} · ${score}${date}`;
+}
+
+function buildPlayersOptions(data) {
+  const byTeam = {};
+  for (const p of (data.players || [])) {
+    if (!byTeam[p.team]) byTeam[p.team] = [];
+    byTeam[p.team].push(p);
+  }
+  Object.values(byTeam).forEach(arr => arr.sort((a,b)=>a.name.localeCompare(b.name, "ko")));
+  return byTeam;
+}
+
+function renderGoalList(container, data, matchId) {
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const items = (data.goals || []).filter(g => g.matchId === matchId);
+  if (!items.length) {
+    container.innerHTML = `<div class="small">아직 입력 없음</div>`;
+    return;
+  }
+  const lines = items.map(g => {
+    const p = playersById.get(g.playerId);
+    const name = p ? `${p.team} · ${p.name}` : g.playerId;
+    return `<div class="goalItem"><b>${name}</b> — ${g.count}골</div>`;
+  }).join("");
+  container.innerHTML = lines;
+}
+
+function validateGoalSum(data, match) {
+  const sum = (data.goals || [])
+    .filter(g => g.matchId === match.id)
+    .reduce((acc, g) => acc + (g.count || 0), 0);
+
+  if (match.hg === null || match.ag === null) return { ok: true, msg: "" };
+  const target = match.hg + match.ag;
+  if (sum === target) return { ok: true, msg: "" };
+  return { ok: false, msg: `⚠️ 득점자 합계(${sum})가 스코어 합계(${target})와 다름` };
 }
 
 async function boot() {
   const page = document.body.dataset.page;
-  const data = await loadData();
+  const original = await loadData();
+  let data = deepClone(original);
 
   if (page === "standings") {
     const standings = computeStandings(data);
@@ -135,30 +253,159 @@ async function boot() {
     renderSchedule(document.querySelector("#schedule"), data);
   }
 
+  if (page === "stats") {
+    const status = computeTitleStatus(data);
+    const remain = computeRemaining(data);
+    document.querySelector("#titleStatus").textContent = status.text;
+    document.querySelector("#titleStatus").dataset.kind = status.kind;
+    document.querySelector("#remainingGames").textContent = String(remain.remaining);
+    document.querySelector("#totalGames").textContent = String(remain.total);
+
+    renderTeamGoals(document.querySelector("#teamGoals"), computeTeamGoals(data));
+    renderTopScorers(document.querySelector("#topScorers"), computeScorers(data));
+
+    const cov = coverageGoals(data);
+    document.querySelector("#goalCoverage").textContent =
+      `결과가 입력된 경기 ${cov.played}경기 중 득점자 합계까지 맞는 경기: ${cov.ok}경기`;
+  }
+
   if (page === "admin") {
-    // admin은 'JSON 생성/복사' 기능만 (정적 사이트에서는 서버 파일을 직접 수정할 수 없음)
-    const area = document.querySelector("#jsonOut");
-    area.value = JSON.stringify(data, null, 2);
+    const matchSelect = document.querySelector("#matchSelect");
+    const playerSelect = document.querySelector("#playerSelect");
+    const homeLbl = document.querySelector("#homeLbl");
+    const awayLbl = document.querySelector("#awayLbl");
+    const homeGoals = document.querySelector("#homeGoals");
+    const awayGoals = document.querySelector("#awayGoals");
+    const matchDate = document.querySelector("#matchDate");
+    const jsonOut = document.querySelector("#jsonOut");
+    const goalList = document.querySelector("#goalList");
+    const goalWarn = document.querySelector("#goalWarn");
+
+    // matches dropdown
+    matchSelect.innerHTML = "";
+    data.matches.forEach(m => {
+      matchSelect.appendChild(el("option", { value: String(m.id), text: fmtMatchLabel(m) }));
+    });
+
+    // players dropdown (팀별 정렬)
+    const byTeam = buildPlayersOptions(data);
+    const teams = data.teams.slice();
+    playerSelect.innerHTML = "";
+    teams.forEach(t => {
+      const optg = document.createElement("optgroup");
+      optg.label = t;
+      (byTeam[t] || []).forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name;
+        optg.appendChild(opt);
+      });
+      playerSelect.appendChild(optg);
+    });
+
+    function setJsonOut() {
+      jsonOut.value = JSON.stringify(data, null, 2);
+    }
+
+    function getSelectedMatch() {
+      const id = Number(matchSelect.value);
+      return data.matches.find(m => m.id === id);
+    }
+
+    function refreshMatchUI() {
+      const m = getSelectedMatch();
+      homeLbl.textContent = `홈 · ${m.home}`;
+      awayLbl.textContent = `원정 · ${m.away}`;
+      homeGoals.value = (m.hg === null ? "" : String(m.hg));
+      awayGoals.value = (m.ag === null ? "" : String(m.ag));
+      matchDate.value = m.date || "";
+
+      renderGoalList(goalList, data, m.id);
+      const v = validateGoalSum(data, m);
+      goalWarn.style.display = v.ok ? "none" : "block";
+      goalWarn.textContent = v.msg;
+
+      // 업데이트된 라벨 반영
+      Array.from(matchSelect.options).forEach(opt => {
+        const mid = Number(opt.value);
+        const mm = data.matches.find(x => x.id === mid);
+        opt.textContent = fmtMatchLabel(mm);
+      });
+
+      setJsonOut();
+    }
+
+    matchSelect.addEventListener("change", refreshMatchUI);
+
+    document.querySelector("#btnApplyScore").onclick = () => {
+      const m = getSelectedMatch();
+      const hg = homeGoals.value === "" ? null : Number(homeGoals.value);
+      const ag = awayGoals.value === "" ? null : Number(awayGoals.value);
+      if (hg !== null && (Number.isNaN(hg) || hg < 0)) return alert("홈 득점이 이상해.");
+      if (ag !== null && (Number.isNaN(ag) || ag < 0)) return alert("원정 득점이 이상해.");
+
+      m.hg = hg;
+      m.ag = ag;
+      m.date = matchDate.value || "";
+      refreshMatchUI();
+      alert("스코어 반영 완료! (아래 JSON을 GitHub에 저장하면 사이트에 적용됨)");
+    };
+
+    document.querySelector("#btnClearScore").onclick = () => {
+      const m = getSelectedMatch();
+      m.hg = null; m.ag = null; m.date = "";
+      refreshMatchUI();
+    };
+
+    document.querySelector("#btnAddGoal").onclick = () => {
+      const m = getSelectedMatch();
+      const pid = playerSelect.value;
+      const cnt = Number(document.querySelector("#goalCount").value || "1");
+      if (!pid) return alert("선수를 선택해.");
+      if (!Number.isInteger(cnt) || cnt <= 0) return alert("골 수는 1 이상 정수로.");
+
+      data.goals = data.goals || [];
+      data.goals.push({ matchId: m.id, playerId: pid, count: cnt });
+      refreshMatchUI();
+    };
+
+    document.querySelector("#btnClearGoals").onclick = () => {
+      const m = getSelectedMatch();
+      data.goals = (data.goals || []).filter(g => g.matchId !== m.id);
+      refreshMatchUI();
+    };
 
     document.querySelector("#btnCopy").onclick = async () => {
-      await navigator.clipboard.writeText(area.value);
-      alert("JSON을 클립보드에 복사했어. 이제 GitHub의 matches.json에 붙여넣으면 끝!");
+      await navigator.clipboard.writeText(jsonOut.value);
+      alert("JSON 복사 완료! GitHub의 matches.json에 전체 붙여넣기 하면 끝.");
     };
 
     document.querySelector("#btnDownload").onclick = () => {
-      const blob = new Blob([area.value], { type: "application/json" });
+      const blob = new Blob([jsonOut.value], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "matches.json";
       a.click();
       URL.revokeObjectURL(a.href);
     };
-  }
 
-  if (page === "stats") {
-    const rows = computeTeamGoals(data);
-    renderTeamGoals(document.querySelector("#teamGoals"), rows);
+    document.querySelector("#btnResetAll").onclick = () => {
+      data = deepClone(original);
+      // 재렌더
+      matchSelect.innerHTML = "";
+      data.matches.forEach(m => matchSelect.appendChild(el("option", { value: String(m.id), text: fmtMatchLabel(m) })));
+      refreshMatchUI();
+    };
+
+    setJsonOut();
+    refreshMatchUI();
   }
 }
 
-window.addEventListener("DOMContentLoaded", boot);
+window.addEventListener("DOMContentLoaded", () => {
+  boot().catch(err => {
+    console.error(err);
+    document.body.innerHTML = `<div style="padding:20px;color:#fff;">에러: ${err.message}</div>`;
+  });
+});
+
