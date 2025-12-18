@@ -148,11 +148,23 @@ function renderTable(container, headers, rows) {
 }
 
 function renderStandings(container, standings) {
-  renderTable(
-    container,
-    ["순위","팀","경기","승","무","패","득점","실점","득실","승점"],
-    standings.map((r, i) => [i+1, r.team, r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS])
-  );
+  const table = el("table", { class: "table" });
+  const thead = el("thead");
+  const trh = el("tr");
+  ["순위","팀","경기","승","무","패","득점","실점","득실","승점"].forEach(h => trh.appendChild(el("th", { text: h })));
+  thead.appendChild(trh);
+
+  const tbody = el("tbody");
+  standings.forEach((r, i) => {
+    const tr = el("tr", { class: i === 0 ? "rank1" : "" });
+    [i+1, r.team, r.P, r.W, r.D, r.L, r.GF, r.GA, r.GD, r.PTS].forEach(v => tr.appendChild(el("td", { text: String(v) })));
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  container.innerHTML = "";
+  container.appendChild(table);
 }
 
 function renderSchedule(container, data) {
@@ -400,6 +412,41 @@ async function boot() {
     setJsonOut();
     refreshMatchUI();
   }
+    // ===============================
+  // THEME SWITCH (GLOBAL)
+  // ===============================
+  const html = document.documentElement;
+  const savedTheme = localStorage.getItem("league_theme") || "blue";
+  html.setAttribute("data-theme", savedTheme);
+
+  const nav = document.querySelector(".nav");
+  if (nav && !nav.querySelector(".themeBtn")) {
+    const btn = document.createElement("button");
+    btn.className = "themeBtn";
+
+    const themes = ["blue", "purple", "green", "red"];
+    const labels = {
+      blue: "블루",
+      purple: "퍼플",
+      green: "그린",
+      red: "레드"
+    };
+
+    btn.textContent = `테마: ${labels[savedTheme]}`;
+
+    btn.onclick = () => {
+      const current = html.getAttribute("data-theme") || "blue";
+      const idx = themes.indexOf(current);
+      const next = themes[(idx + 1) % themes.length];
+
+      html.setAttribute("data-theme", next);
+      localStorage.setItem("league_theme", next);
+      btn.textContent = `테마: ${labels[next]}`;
+    };
+
+    nav.appendChild(btn);
+  }
+
 }
 
 window.addEventListener("DOMContentLoaded", () => {
