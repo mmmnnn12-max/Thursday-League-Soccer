@@ -1,3 +1,34 @@
+:root{
+  --w: 980px;
+
+  /* 기본 팔레트(blue) */
+  --bg0: #060914;
+  --bg1: #0b0f19;
+  --card: rgba(233,238,252,.05);
+  --cardBorder: rgba(233,238,252,.10);
+  --text: #e9eefc;
+  --muted: rgba(233,238,252,.85);
+
+  --accent: #3b82f6;   /* 파란 포인트 */
+  --accent2: #60a5fa;
+}
+
+/* 테마: purple */
+html[data-theme="purple"]{
+  --accent:#a855f7;
+  --accent2:#c084fc;
+}
+/* 테마: green */
+html[data-theme="green"]{
+  --accent:#22c55e;
+  --accent2:#86efac;
+}
+/* 테마: red */
+html[data-theme="red"]{
+  --accent:#ef4444;
+  --accent2:#fca5a5;
+}
+
 :root { --w: 980px; }
 * { box-sizing: border-box; }
 body {
