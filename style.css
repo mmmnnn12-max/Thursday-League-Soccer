@@ -48,6 +48,9 @@ h2 { margin: 6px 0 12px; font-size: 17px; opacity: .96; }
   overflow: hidden;
   border-radius: 14px;
 }
+/* PC 기본: 모바일 카드 숨김 */
+.mList { display: none; }
+
 .table th, .table td {
   padding: 10px 10px;
   border-bottom: 1px solid rgba(233,238,252,.08);
