@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Thursday League Soccer | 기록</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=full1" />
 </head>
 <body data-page="stats">
   <div class="topbar">
@@ -21,38 +21,27 @@
   <div class="container">
     <h1>기록</h1>
 
-    <div class="grid">
-      <div class="card">
-        <h2>우승 현황</h2>
-        <div id="titleStatus" class="pill">불러오는 중...</div>
-        <div class="small" style="margin-top:8px">
-          남은 경기: <b id="remainingGames">-</b> / 총 경기: <b id="totalGames">-</b>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>팀 득점</h2>
-        <div id="teamGoals">불러오는 중...</div>
-      </div>
+    <div class="card">
+      <div class="pill" id="titleStatus" data-kind="neutral">-</div>
+      <div style="height:8px"></div>
+      <div class="small">남은 경기: <b id="remainingGames">-</b> / 전체: <b id="totalGames">-</b></div>
     </div>
 
-    <div style="height:16px"></div>
+    <div style="height:14px"></div>
 
     <div class="grid">
-      <div class="card accentCard">
-  <h2>득점왕</h2>
-        <div class="small">운영자 페이지에서 경기별 득점자를 입력하면 자동 집계돼.</div>
-        <div style="height:10px"></div>
-        <div id="topScorers">불러오는 중...</div>
-      </div>
-
       <div class="card">
-        <h2>경기별 득점 입력 현황</h2>
-        <div id="goalCoverage" class="small">불러오는 중...</div>
+        <h2>팀 득점</h2>
+        <div id="teamGoals"></div>
+      </div>
+      <div class="card">
+        <h2>득점왕</h2>
+        <div id="topScorers"></div>
       </div>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=full1"></script>
 </body>
 </html>
+
