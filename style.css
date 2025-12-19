@@ -595,3 +595,88 @@ button:active{ transform: translateY(0) scale(.99); }
     box-shadow: 0 0 14px rgba(var(--accent-rgb), .18);
   }
 }
+/* =========================
+   RESPONSIVE APP RULES
+========================= */
+
+/* 1) 기본: PC는 표 보이고 모바일카드 숨김 */
+.mList { display: none; }
+
+/* 2) 모바일: 표 숨기고 카드 보이게 */
+@media (max-width: 520px) {
+  .table { display: none; }
+  .mList { display: block; }
+
+  /* 레이아웃: 모바일은 1열로 */
+  .grid { grid-template-columns: 1fr !important; }
+
+  /* 글자/여백 */
+  h1 { font-size: 22px; }
+  h2 { font-size: 16px; }
+  .container { padding: 14px; padding-bottom: 92px; } /* 탭바 공간 */
+  .card { padding: 14px; border-radius: 16px; }
+
+  /* 경기 row 줄바꿈/정렬 */
+  .matchRow { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .matchMeta { white-space: normal; }
+
+  /* 링크(팀명) 줄바꿈 방지 + 아이콘 고정 */
+  .teamLink { display: inline-flex; gap: 8px; align-items: center; }
+  .teamLink .icon { flex: 0 0 auto; }
+  .teamLink span:last-child { white-space: nowrap; }
+
+  /* 상단 메뉴는 모바일에서 숨기고 탭바를 메인으로 */
+  .menu { display: none !important; }
+}
+
+/* 3) 탭바(모바일 앱 느낌) */
+.tabbar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 50;
+  background: rgba(11,15,25,.92);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(233,238,252,.10);
+  padding: 10px 12px env(safe-area-inset-bottom);
+  display: none; /* 기본 PC에선 숨김 */
+}
+.tabbarInner {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.tabbar .tab {
+  text-align: center;
+  padding: 10px 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(233,238,252,.10);
+  background: rgba(233,238,252,.04);
+  font-weight: 900;
+  font-size: 12px;
+}
+.tabbar .tab .ico { font-size: 18px; line-height: 1.1; margin-bottom: 4px; }
+.tabbar .tab.active {
+  background: rgba(233,238,252,.10);
+  border-color: rgba(233,238,252,.18);
+}
+
+@media (max-width: 520px) {
+  .tabbar { display: block; }
+}
+
+/* 4) 모바일 카드 리스트 기본 스타일(없으면 추가) */
+.mList { display:none; }
+.mItem {
+  border: 1px solid rgba(233,238,252,.10);
+  background: rgba(233,238,252,.04);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.mTop { display:flex; justify-content: space-between; gap: 10px; font-weight: 900; }
+.mMeta { display:grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+.kv { display:flex; justify-content: space-between; opacity: .9; }
+.k { opacity: .75; font-weight: 800; }
+.v { font-weight: 900; }
