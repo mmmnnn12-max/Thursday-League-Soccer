@@ -270,6 +270,11 @@
       "matchId": 1,
       "playerId": "p5",
       "count": 1
+    },
+    {
+      "matchId": 1,
+      "playerId": "p3",
+      "count": 1
     }
   ]
 }
