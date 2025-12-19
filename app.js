@@ -5,7 +5,7 @@
   const res = await fetch(url, { cache: "no-store" });
 
   const ct = res.headers.get("content-type") || "";
-  const text = await res.text(); // 먼저 text로 받기
+  const text = await res.text();
 
   if (!res.ok) {
     console.error("FETCH FAIL:", res.status, res.statusText, "URL:", res.url);
@@ -13,7 +13,6 @@
     throw new Error(`matches.json fetch 실패 (${res.status})`);
   }
 
-  // HTML이면 바로 잡아내기
   if (text.trim().startsWith("<")) {
     console.error("HTML RECEIVED INSTEAD OF JSON. URL:", res.url);
     console.error("BODY(first 200):", text.slice(0, 200));
@@ -29,18 +28,18 @@
     throw e;
   }
 
-  // 구조 검증(여기서 걸리면 matches.json 구조/경로 문제 확정)
   if (!data || typeof data !== "object") throw new Error("matches.json이 객체가 아님");
   if (!Array.isArray(data.teams)) throw new Error("matches.json에 teams 배열이 없음");
   if (!Array.isArray(data.matches)) throw new Error("matches.json에 matches 배열이 없음");
 
   return data;
 }
+
 function deepClone(x) { return JSON.parse(JSON.stringify(x)); }
 
-function el(tag, attrs={}, children=[]) {
+function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
-  for (const [k,v] of Object.entries(attrs)) {
+  for (const [k, v] of Object.entries(attrs)) {
     if (k === "class") node.className = v;
     else if (k === "text") node.textContent = v;
     else node.setAttribute(k, v);
@@ -74,7 +73,6 @@ function renderMobileList(container, items) {
   const list = el("div", { class: "mList" });
 
   items.forEach(it => {
-    // ✅ href가 있으면 a태그(링크), 없으면 div
     const wrap = document.createElement(it.href ? "a" : "div");
     wrap.className = "mItem" + (it.href ? " mItemLink" : "");
     if (it.href) wrap.href = it.href;
@@ -85,7 +83,7 @@ function renderMobileList(container, items) {
     ]);
 
     const meta = el("div", { class: "mMeta" });
-    (it.kvs || []).forEach(([k,v]) => {
+    (it.kvs || []).forEach(([k, v]) => {
       meta.appendChild(el("div", { class: "kv" }, [
         el("div", { class: "k", text: k }),
         el("div", { class: "v", text: String(v) })
@@ -102,14 +100,14 @@ function renderMobileList(container, items) {
 
 /* ------------------ Compute ------------------ */
 
-// ===== POS HELPERS =====
 const isGK = (p) => (String(p?.pos || "").toUpperCase() === "GK");
 const isDF = (p) => (String(p?.pos || "").toUpperCase() === "DF");
 const isGKOrDF = (p) => (isGK(p) || isDF(p));
+
 function computeStandings(data) {
   const { teams, rules, matches } = data;
   const table = {};
-  teams.forEach(t => table[t] = { team: t, P:0, W:0, D:0, L:0, GF:0, GA:0, GD:0, PTS:0 });
+  teams.forEach(t => table[t] = { team: t, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0, GD: 0, PTS: 0 });
 
   for (const m of matches) {
     if (m.hg === null || m.ag === null) continue;
@@ -125,11 +123,10 @@ function computeStandings(data) {
 
   Object.values(table).forEach(r => r.GD = r.GF - r.GA);
 
-  return Object.values(table).sort((a,b) =>
+  return Object.values(table).sort((a, b) =>
     (b.PTS - a.PTS) || (b.GD - a.GD) || (b.GF - a.GF) || a.team.localeCompare(b.team, "ko")
   );
 }
-
 
 function computeTeamGoals(data) {
   const goals = {};
@@ -141,7 +138,7 @@ function computeTeamGoals(data) {
   }
   return Object.entries(goals)
     .map(([team, gf]) => ({ team, gf }))
-    .sort((a,b) => (b.gf - a.gf) || a.team.localeCompare(b.team, "ko"));
+    .sort((a, b) => (b.gf - a.gf) || a.team.localeCompare(b.team, "ko"));
 }
 
 function computeRemaining(data) {
@@ -189,7 +186,7 @@ function computeScorers(data) {
     return { playerId, name: p.name, team: p.team, goals };
   });
 
-  rows.sort((a,b) =>
+  rows.sort((a, b) =>
     (b.goals - a.goals) ||
     a.team.localeCompare(b.team, "ko") ||
     a.name.localeCompare(b.name, "ko")
@@ -198,15 +195,15 @@ function computeScorers(data) {
   return rows;
 }
 
-function computePlayerGoalsMap(data){
-  const map = new Map(); // playerId -> goals
+function computePlayerGoalsMap(data) {
+  const map = new Map();
   for (const g of (data.goals || [])) {
     map.set(g.playerId, (map.get(g.playerId) || 0) + (g.count || 0));
   }
   return map;
 }
 
-function computeAllPlayerGoalRanking(data){
+function computeAllPlayerGoalRanking(data) {
   const goalsMap = computePlayerGoalsMap(data);
   const rows = (data.players || []).map(p => ({
     playerId: p.id,
@@ -214,29 +211,29 @@ function computeAllPlayerGoalRanking(data){
     team: p.team,
     goals: goalsMap.get(p.id) || 0
   }));
-  rows.sort((a,b)=>
+  rows.sort((a, b) =>
     (b.goals - a.goals) ||
     a.team.localeCompare(b.team, "ko") ||
     a.name.localeCompare(b.name, "ko")
   );
   return rows;
 }
+
 function computeAssistLeaders(data) {
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
-  const score = new Map(); // playerId -> assists
+  const score = new Map();
 
   for (const a of (data.assists || [])) {
     if (!playersById.has(a.playerId)) continue;
     score.set(a.playerId, (score.get(a.playerId) || 0) + (a.count || 0));
   }
-  
 
   const rows = Array.from(score.entries()).map(([playerId, assists]) => {
     const p = playersById.get(playerId);
     return { playerId, name: p.name, team: p.team, assists };
   });
 
-  rows.sort((a,b) =>
+  rows.sort((a, b) =>
     (b.assists - a.assists) ||
     a.team.localeCompare(b.team, "ko") ||
     a.name.localeCompare(b.name, "ko")
@@ -244,32 +241,59 @@ function computeAssistLeaders(data) {
 
   return rows;
 }
- function computePlayerValue(card) {
-  const g  = card.goals || 0;
-  const a  = card.assists || 0;
+
+/* ============================================================
+   ✅ 몸값 계산 (패널티 포함)
+   - 지면(teamL) 몸값 감소
+   - GK/DF가 대량실점(4실점 이상) 하면 몸값 더 크게 감소
+   - 실점(전체)도 GK/DF에게 약하게 페널티
+   ============================================================ */
+function computePlayerValue(card) {
+  const g = card.goals || 0;
+  const a = card.assists || 0;
   const cs = card.cleanSheets || 0;
 
-  // 기본 몸값 (억 단위)
   const base = 50;
 
-  // 성과 보너스 (억 단위)
   const bonus =
-    g * 10 +          // 골 10억
-    a * 7  +          // 어시스트 7억
-    cs * 6 +          // 클린시트 6억
-    (card.teamW || 0) * 1; // 팀 승리 1억
+    g * 10 +                 // 골
+    a * 7 +                  // 어시
+    cs * 6 +                 // 클린시트
+    (card.teamW || 0) * 1;   // 팀승 보너스
 
-  const total = base + bonus;
+  // ✅ 패널티
+  const lossPenalty = (card.teamL || 0) * 3;   // 패배 1번당 -3억 (원하면 조절)
+  const drawPenalty = (card.teamD || 0) * 0;   // 무승부 페널티(원하면 0.5 등으로)
+
+  // GK/DF면 실점 관련 페널티 적용, 공격수/미드면 거의 안 주기
+  const pos = String(card.player?.pos || "").toUpperCase();
+  const isDefRole = (pos === "GK" || pos === "DF");
+
+  const concededTotal = card.concededTotal || 0;
+  const heavyConcede = card.heavyConcede || 0;
+
+  const concedePenalty = isDefRole ? (concededTotal * 0.5) : 0;    // 총 실점 1골당 -0.5억
+  const heavyPenalty = isDefRole ? (heavyConcede * 4) : 0;         // 4실점부터 급격히 -4억씩
+
+  // 최종
+  let total = base + bonus - lossPenalty - drawPenalty - concedePenalty - heavyPenalty;
+
+  // 최소값(바닥) 설정 (0 밑으로 내려가면 보기 이상해서)
+  total = Math.max(0, Math.round(total));
 
   return {
-    value: total,              // ✅ 숫자 (억)
-    valueText: `${total}억`,   // ✅ 표시용
+    value: total,
+    valueText: `${total}억`,
     breakdown: [
       `기본 몸값: ${base}억`,
       `⚽ 득점 ${g} × 10 = ${g * 10}억`,
       `🅰️ 어시 ${a} × 7 = ${a * 7}억`,
       `🧤 클린시트 ${cs} × 6 = ${cs * 6}억`,
       `🏆 팀승 ${card.teamW || 0} × 1 = ${(card.teamW || 0) * 1}억`,
+      `— 패널티 —`,
+      `❌ 패배 ${card.teamL || 0} × 3 = -${lossPenalty}억`,
+      isDefRole ? `🥅 총 실점 ${concededTotal} × 0.5 = -${Math.round(concedePenalty)}억` : `🥅 총 실점 페널티: 0억(공격/미드)`,
+      isDefRole ? `💥 대량실점(4+) 가중치 ${heavyConcede} × 4 = -${heavyPenalty}억` : `💥 대량실점 가중치: 0억(공격/미드)`,
       `합계: ${total}억`,
     ]
   };
@@ -280,11 +304,11 @@ function computeValueRanking(data) {
     .map(p => {
       const card = computePlayerCard(data, p.id);
       if (!card) return null;
-      const val = computePlayerValue(card); // { value:number, valueText:string, breakdown:[] }
+      const val = computePlayerValue(card);
       return { playerId: p.id, name: p.name, team: p.team, value: val.value };
     })
     .filter(Boolean)
-    .sort((a,b) =>
+    .sort((a, b) =>
       (b.value - a.value) ||
       a.team.localeCompare(b.team, "ko") ||
       a.name.localeCompare(b.name, "ko")
@@ -292,24 +316,25 @@ function computeValueRanking(data) {
 
   return rows;
 }
+
 function computeCleanSheetLeaders(data) {
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
-  const clean = new Map(); // playerId -> clean sheets
+  const clean = new Map();
 
   for (const p of (data.players || [])) clean.set(p.id, 0);
 
   for (const m of (data.matches || [])) {
-    if (m.hg === null || m.ag === null) continue; // 결과 없는 경기 제외
+    if (m.hg === null || m.ag === null) continue;
 
     for (const p of (data.players || [])) {
       const pos = (p.pos || "").toUpperCase();
-      if (pos !== "GK" && pos !== "DF") continue; // GK/DF만 클린시트 집계
+      if (pos !== "GK" && pos !== "DF") continue;
 
       const isHome = p.team === m.home;
       const isAway = p.team === m.away;
       if (!isHome && !isAway) continue;
 
-      const ga = isHome ? m.ag : m.hg; // 해당 선수 팀 실점
+      const ga = isHome ? m.ag : m.hg;
       if (ga === 0) clean.set(p.id, (clean.get(p.id) || 0) + 1);
     }
   }
@@ -322,7 +347,7 @@ function computeCleanSheetLeaders(data) {
     })
     .filter(Boolean);
 
-  rows.sort((a,b) =>
+  rows.sort((a, b) =>
     (b.cs - a.cs) ||
     a.team.localeCompare(b.team, "ko") ||
     a.name.localeCompare(b.name, "ko")
@@ -330,29 +355,27 @@ function computeCleanSheetLeaders(data) {
 
   return rows;
 }
+
 function renderLeadersWithLinks(container, kind, rows) {
-  // kind: "assist" | "clean"
   if (!rows || rows.length === 0) {
     container.innerHTML = `<div class="small">아직 기록이 없어.</div>`;
     return;
   }
 
-  const medalOf = (i) => (i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : "");
+  const medalOf = (i) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "");
   const label = (kind === "assist") ? "어시" : "CS";
 
-  // PC 표
   const table = el("table", { class: "table" });
   const thead = el("thead");
   const trh = el("tr");
-  ["순위","선수","팀", label].forEach(h => trh.appendChild(el("th", { text: h })));
+  ["순위", "선수", "팀", label].forEach(h => trh.appendChild(el("th", { text: h })));
   thead.appendChild(trh);
 
   const tbody = el("tbody");
   rows.forEach((r, i) => {
     const tr = el("tr");
-    tr.appendChild(el("td", { text: String(i+1) }));
+    tr.appendChild(el("td", { text: String(i + 1) }));
 
-    // 선수 링크
     const tdName = document.createElement("td");
     const a = document.createElement("a");
     a.href = `player.html?id=${encodeURIComponent(r.playerId)}`;
@@ -373,19 +396,20 @@ function renderLeadersWithLinks(container, kind, rows) {
   container.innerHTML = "";
   container.appendChild(table);
 
-  // 모바일 카드 리스트 (520px 이하에서만 보이도록 네 CSS/구조에 맞춰 출력)
   renderMobileList(container, rows.map((r, i) => ({
-    title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
+    title: `${medalOf(i)} ${i + 1}위 · ${r.name}`.trim(),
     badge: `${kind === "assist" ? r.assists : r.cs}${label}`,
     kvs: [["팀", r.team]]
   })));
 }
+
 /* ------------------ Render ------------------ */
+
 function renderStandings(container, standings) {
   const table = el("table", { class: "table" });
   const thead = el("thead");
   const trh = el("tr");
-  ["순위","팀","경기","승","무","패","득점","실점","득실","승점"].forEach(h =>
+  ["순위", "팀", "경기", "승", "무", "패", "득점", "실점", "득실", "승점"].forEach(h =>
     trh.appendChild(el("th", { text: h }))
   );
   thead.appendChild(trh);
@@ -393,7 +417,6 @@ function renderStandings(container, standings) {
   const tbody = el("tbody");
   standings.forEach((r, i) => {
     const tr = el("tr");
-
     tr.appendChild(el("td", { text: String(i + 1) }));
 
     const teamTd = document.createElement("td");
@@ -418,17 +441,17 @@ function renderStandings(container, standings) {
   container.appendChild(table);
 
   renderMobileList(container, standings.map((r, i) => ({
-  title: `${i+1}위 · ${r.team}`,
-  badge: `${r.PTS}점`,
-  href: `team.html?team=${encodeURIComponent(r.team)}`, // ✅ 추가
-  kvs: [
-    ["경기", r.P],
-    ["승/무/패", `${r.W}/${r.D}/${r.L}`],
-    ["득점", r.GF],
-    ["실점", r.GA],
-    ["득실", r.GD],
-  ]
-})));
+    title: `${i + 1}위 · ${r.team}`,
+    badge: `${r.PTS}점`,
+    href: `team.html?team=${encodeURIComponent(r.team)}`,
+    kvs: [
+      ["경기", r.P],
+      ["승/무/패", `${r.W}/${r.D}/${r.L}`],
+      ["득점", r.GF],
+      ["실점", r.GA],
+      ["득실", r.GD],
+    ]
+  })));
 }
 
 function renderSchedule(container, data, opts = {}) {
@@ -440,7 +463,7 @@ function renderSchedule(container, data, opts = {}) {
     groups[m.round].push(m);
   });
 
-  const rounds = Object.keys(groups).map(Number).sort((a,b)=>a-b).filter(r => r <= maxRounds);
+  const rounds = Object.keys(groups).map(Number).sort((a, b) => a - b).filter(r => r <= maxRounds);
 
   container.innerHTML = "";
   rounds.forEach(round => {
@@ -465,22 +488,22 @@ function renderSchedule(container, data, opts = {}) {
 }
 
 function renderTeamGoals(container, rows) {
-  renderTable(container, ["순위","팀","총 득점"], rows.map((r, i) => [i+1, r.team, r.gf]));
+  renderTable(container, ["순위", "팀", "총 득점"], rows.map((r, i) => [i + 1, r.team, r.gf]));
   renderMobileList(container, rows.map((r, i) => ({
-    title: `${i+1}위 · ${r.team}`,
+    title: `${i + 1}위 · ${r.team}`,
     badge: `${r.gf}골`,
     kvs: []
   })));
 }
-function renderTeamPlayers(container, data, team){
+
+function renderTeamPlayers(container, data, team) {
   if (!container) return;
 
   const players = (data.players || [])
     .filter(p => p.team === team)
     .slice()
-    .sort((a,b) => {
-      // 포지션 정렬: GK > DF > MF > FW > 기타
-      const order = { GK:0, DF:1, MF:2, FW:3 };
+    .sort((a, b) => {
+      const order = { GK: 0, DF: 1, MF: 2, FW: 3 };
       const ap = String(a.pos || "").toUpperCase();
       const bp = String(b.pos || "").toUpperCase();
       const ao = (ap in order) ? order[ap] : 9;
@@ -488,23 +511,21 @@ function renderTeamPlayers(container, data, team){
       return (ao - bo) || a.name.localeCompare(b.name, "ko");
     });
 
-  if (!players.length){
+  if (!players.length) {
     container.innerHTML = `<div class="small">등록된 선수가 없어.</div>`;
     return;
   }
 
-  // PC 표 (이름은 링크)
   const table = el("table", { class: "table" });
   const thead = el("thead");
   const trh = el("tr");
-  ["번호","선수","포지션"].forEach(h => trh.appendChild(el("th",{text:h})));
+  ["번호", "선수", "포지션"].forEach(h => trh.appendChild(el("th", { text: h })));
   thead.appendChild(trh);
 
   const tbody = el("tbody");
   players.forEach((p, idx) => {
     const tr = el("tr");
-
-    tr.appendChild(el("td", { text: String(idx+1) }));
+    tr.appendChild(el("td", { text: String(idx + 1) }));
 
     const tdName = document.createElement("td");
     const a = document.createElement("a");
@@ -524,10 +545,10 @@ function renderTeamPlayers(container, data, team){
   container.innerHTML = "";
   container.appendChild(table);
 
-  // 모바일 카드
   renderMobileList(container, players.map(p => ({
     title: p.name,
     badge: p.pos || "-",
+    href: `player.html?id=${encodeURIComponent(p.id)}`,
     kvs: [["팀", p.team]]
   })));
 }
@@ -538,61 +559,62 @@ function renderTopScorers(container, rows) {
     return;
   }
 
-  const medalOf = (i) => (i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : "");
+  const medalOf = (i) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "");
 
-  // PC 표
   renderTable(
     container,
-    ["순위","선수","팀","골"],
-    rows.map((r, i) => [i+1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
+    ["순위", "선수", "팀", "골"],
+    rows.map((r, i) => [i + 1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
   );
 
-  // 모바일 카드
   renderMobileList(container, rows.map((r, i) => ({
-    title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
+    title: `${medalOf(i)} ${i + 1}위 · ${r.name}`.trim(),
     badge: `${r.goals}골`,
     kvs: [["팀", r.team]]
   })));
 }
 
-
 /* ------------------ Team helpers ------------------ */
 
-function computePlayerCard(data, playerId){
+function computePlayerCard(data, playerId) {
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
   const player = playersById.get(playerId);
   if (!player) return null;
 
-  // 팀이 치른 "결과 있는 경기" 수
   const teamPlayedMatches = (data.matches || [])
     .filter(m => (m.home === player.team || m.away === player.team) && m.hg !== null && m.ag !== null);
 
-  // 득점/어시 합계
   const goals = (data.goals || [])
     .filter(g => g.playerId === playerId)
-    .reduce((a,g) => a + (g.count || 0), 0);
+    .reduce((a, g) => a + (g.count || 0), 0);
 
   const assists = (data.assists || [])
     .filter(a => a.playerId === playerId)
-    .reduce((a,x) => a + (x.count || 0), 0);
+    .reduce((a, x) => a + (x.count || 0), 0);
 
-  // 클린시트(GK/DF) — 네 로직 재활용: 팀이 무실점인 경기만 카운트(결과 있는 경기 기준)
   let cleanSheets = 0;
   const pos = String(player.pos || "").toUpperCase();
-  if (pos === "GK" || pos === "DF"){
-    for (const m of teamPlayedMatches){
+  if (pos === "GK" || pos === "DF") {
+    for (const m of teamPlayedMatches) {
       const isHome = (player.team === m.home);
       const ga = isHome ? m.ag : m.hg;
       if (ga === 0) cleanSheets += 1;
     }
   }
 
-  // 팀 성적(결과 있는 경기 기준)
-  let teamW=0, teamD=0, teamL=0;
-  for (const m of teamPlayedMatches){
+  // ✅ 팀 성적 + 실점 관련(결과 있는 경기 기준)
+  let teamW = 0, teamD = 0, teamL = 0;
+  let concededTotal = 0;
+  let heavyConcede = 0;
+
+  for (const m of teamPlayedMatches) {
     const isHome = (player.team === m.home);
     const gf = isHome ? m.hg : m.ag;
     const ga = isHome ? m.ag : m.hg;
+
+    concededTotal += ga;
+    if (ga >= 4) heavyConcede += (ga - 3);
+
     if (gf > ga) teamW++;
     else if (gf < ga) teamL++;
     else teamD++;
@@ -605,28 +627,31 @@ function computePlayerCard(data, playerId){
     cleanSheets,
     teamPlayed: teamPlayedMatches.length,
     teamW, teamD, teamL,
+
+    // ✅ 추가
+    concededTotal,
+    heavyConcede,
   };
 }
 
-function renderPlayerMatches(container, data, playerId){
+function renderPlayerMatches(container, data, playerId) {
   if (!container) return;
 
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
   const p = playersById.get(playerId);
-  if (!p){
+  if (!p) {
     container.innerHTML = `<div class="small">선수 정보를 찾을 수 없어.</div>`;
     return;
   }
 
-  // 현재 데이터 구조상 “출전 기록”이 따로 없어서,
-  // 우선은 "팀 경기 전체"를 보여주고(결과/일정), 골/어시가 있으면 표시해줌
   const byMatchGoal = new Map();
-  for (const g of (data.goals || [])){
+  for (const g of (data.goals || [])) {
     if (g.playerId !== playerId) continue;
     byMatchGoal.set(g.matchId, (byMatchGoal.get(g.matchId) || 0) + (g.count || 0));
   }
+
   const byMatchAst = new Map();
-  for (const a of (data.assists || [])){
+  for (const a of (data.assists || [])) {
     if (a.playerId !== playerId) continue;
     byMatchAst.set(a.matchId, (byMatchAst.get(a.matchId) || 0) + (a.count || 0));
   }
@@ -634,7 +659,7 @@ function renderPlayerMatches(container, data, playerId){
   const teamMatches = (data.matches || [])
     .filter(m => m.home === p.team || m.away === p.team)
     .slice()
-    .sort((a,b) => (a.round - b.round) || (a.id - b.id));
+    .sort((a, b) => (a.round - b.round) || (a.id - b.id));
 
   const items = teamMatches.map(m => {
     const score = (m.hg === null || m.ag === null) ? "미정" : `${m.hg}:${m.ag}`;
@@ -642,22 +667,23 @@ function renderPlayerMatches(container, data, playerId){
     const g = byMatchGoal.get(m.id) || 0;
     const a = byMatchAst.get(m.id) || 0;
     const tag = (g || a) ? ` · ${g ? `⚽${g}` : ""}${(g && a) ? " " : ""}${a ? `🅰️${a}` : ""}` : "";
-    return [ `R${m.round}`, `${m.home} vs ${m.away}`, `${score}${date}${tag}` ];
+    return [`R${m.round}`, `${m.home} vs ${m.away}`, `${score}${date}${tag}`];
   });
 
-  renderTable(container, ["라운드","경기","결과"], items);
+  renderTable(container, ["라운드", "경기", "결과"], items);
 
-renderMobileList(container, items.map(row => ({
-  title: `${row[0]} · ${row[1]}`,   // "R1 · 팀A vs 팀B"
-  badge: "",
-  kvs: [["결과", row[2]]],         // "3:0 · 12/18 ... · ⚽1 🅰️1"
-})));
+  renderMobileList(container, items.map(row => ({
+    title: `${row[0]} · ${row[1]}`,
+    badge: "",
+    kvs: [["결과", row[2]]],
+  })));
 }
+
 function getTeamMatches(data, team) {
   return data.matches
     .filter(m => m.home === team || m.away === team)
     .slice()
-    .sort((a,b) => (a.round - a.round) || (a.id - b.id));
+    .sort((a, b) => (a.round - a.round) || (a.id - b.id));
 }
 
 function getTeamSummary(data, team) {
@@ -683,15 +709,15 @@ function getTeamTopScorers(data, team) {
     return { name: p.name, goals };
   });
 
-  rows.sort((a,b) => (b.goals - a.goals) || a.name.localeCompare(b.name, "ko"));
+  rows.sort((a, b) => (b.goals - a.goals) || a.name.localeCompare(b.name, "ko"));
   return rows;
 }
+
 function getTeamFormLastN(data, team, n = 3) {
-  // 최근에 "결과가 입력된 경기" 기준으로 N개
   const played = data.matches
     .filter(m => (m.home === team || m.away === team) && m.hg !== null && m.ag !== null)
     .slice()
-    .sort((a,b) => (b.round - a.round) || (b.id - a.id)); // 최신 먼저
+    .sort((a, b) => (b.round - a.round) || (b.id - a.id));
 
   const res = [];
   for (const m of played) {
@@ -707,8 +733,7 @@ function getTeamFormLastN(data, team, n = 3) {
     if (res.length >= n) break;
   }
 
-  // 경기 자체가 부족하면 N개로 채움
-  while (res.length < n) res.push("N"); // Not enough
+  while (res.length < n) res.push("N");
   return res;
 }
 
@@ -724,9 +749,9 @@ function renderFormDots(formArr) {
   return wrap;
 }
 
-
 /* ------------------ Mobile app tabbar + team sheet ------------------ */
-function injectTabbar(data, page){
+
+function injectTabbar(data, page) {
   if (document.querySelector(".tabbar")) return;
 
   const bar = document.createElement("div");
@@ -736,26 +761,18 @@ function injectTabbar(data, page){
   inner.className = "tabbarInner";
 
   const items = [
-  { key:"standings", href:"index.html",    label:"순위", ico:"🏆" },
-  { key:"schedule",  href:"schedule.html", label:"일정", ico:"📅" },
-  { key:"stats",     href:"stats.html",    label:"기록", ico:"📊" },
-  { key:"players",   href:"players.html",  label:"선수", ico:"🧍" },
-  { key:"values",    href:"values.html",   label:"몸값", ico:"💰" },
-];
+    { key: "standings", href: "index.html", label: "순위", ico: "🏆" },
+    { key: "schedule", href: "schedule.html", label: "일정", ico: "📅" },
+    { key: "stats", href: "stats.html", label: "기록", ico: "📊" },
+    { key: "players", href: "players.html", label: "선수", ico: "🧍" },
+    { key: "values", href: "values.html", label: "몸값", ico: "💰" },
+  ];
 
-  for (const it of items){
+  for (const it of items) {
     const a = document.createElement("a");
     a.className = "tab" + (page === it.key ? " active" : "");
     a.href = it.href;
     a.innerHTML = `<div class="ico">${it.ico}</div><div>${it.label}</div>`;
-
-    if (it.isTeam){
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        openTeamSheet(data);
-      });
-    }
-
     inner.appendChild(a);
   }
 
@@ -763,9 +780,9 @@ function injectTabbar(data, page){
   document.body.appendChild(bar);
 }
 
-function openTeamSheet(data){
+function openTeamSheet(data) {
   let overlay = document.querySelector("#teamSheetOverlay");
-  if (!overlay){
+  if (!overlay) {
     overlay = document.createElement("div");
     overlay.id = "teamSheetOverlay";
     overlay.className = "sheetOverlay";
@@ -802,6 +819,7 @@ function openTeamSheet(data){
 }
 
 /* ------------------ boot ------------------ */
+
 async function boot() {
   const page = document.body.dataset.page;
   const original = await loadData();
@@ -814,7 +832,7 @@ async function boot() {
     const box = document.querySelector("#miniSchedule");
     const btn = document.querySelector("#btnMoreMini");
     if (box) {
-      const allRounds = Array.from(new Set(data.matches.map(m => m.round))).sort((a,b)=>a-b);
+      const allRounds = Array.from(new Set(data.matches.map(m => m.round))).sort((a, b) => a - b);
       let shown = 2;
 
       const renderMini = () => {
@@ -827,32 +845,31 @@ async function boot() {
       renderMini();
     }
   }
-     
-if (page === "values") {
-  const box = document.querySelector("#valueRank");
-  const top10 = computeValueRanking(data).slice(0, 10);
 
-  const medalOf = (i) => (i===0?"🥇":i===1?"🥈":i===2?"🥉":"");
+  if (page === "values") {
+    const box = document.querySelector("#valueRank");
+    const top10 = computeValueRanking(data).slice(0, 10);
 
-  // PC 표
-  renderTable(box, ["순위","선수","팀","몸값(억)"], top10.map((r,i)=>[
-    i+1,
-    `${medalOf(i)} ${r.name}`.trim(),
-    r.team,
-    r.value
-  ]));
+    const medalOf = (i) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "");
 
-  // 모바일 카드
-  renderMobileList(box, top10.map((r,i)=>({
-    title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
-    badge: `${r.value}억`,
-    kvs: [["팀", r.team]]
-  })));
-}
+    renderTable(box, ["순위", "선수", "팀", "몸값(억)"], top10.map((r, i) => [
+      i + 1,
+      `${medalOf(i)} ${r.name}`.trim(),
+      r.team,
+      r.value
+    ]));
+
+    renderMobileList(box, top10.map((r, i) => ({
+      title: `${medalOf(i)} ${i + 1}위 · ${r.name}`.trim(),
+      badge: `${r.value}억`,
+      kvs: [["팀", r.team]]
+    })));
+  }
+
   if (page === "schedule") {
     const box = document.querySelector("#schedule");
     const btn = document.querySelector("#btnMore");
-    const allRounds = Array.from(new Set(data.matches.map(m => m.round))).sort((a,b)=>a-b);
+    const allRounds = Array.from(new Set(data.matches.map(m => m.round))).sort((a, b) => a - b);
     let shown = 2;
 
     const render = () => {
@@ -881,255 +898,228 @@ if (page === "values") {
 
     renderTeamGoals(document.querySelector("#teamGoals"), computeTeamGoals(data));
     renderTopScorers(document.querySelector("#topScorers"), computeScorers(data));
-    // 🅰️ 어시스트 랭킹
-renderLeadersWithLinks(
-  document.querySelector("#assistLeaders"),
-  "assist",
-  computeAssistLeaders(data)
-);
 
-// 🧤 클린시트 랭킹 (기록 페이지에는 GK만 표시)
-const cleanAll = computeCleanSheetLeaders(data);
+    renderLeadersWithLinks(
+      document.querySelector("#assistLeaders"),
+      "assist",
+      computeAssistLeaders(data)
+    );
 
-// players map (playerId → player)
-const playerById = new Map((data.players || []).map(p => [p.id, p]));
+    const cleanAll = computeCleanSheetLeaders(data);
+    const playerById = new Map((data.players || []).map(p => [p.id, p]));
 
-// row가 어떤 형태든 GK인지 판별
-const cleanGKOnly = cleanAll.filter(row => {
-  // 1) row.player에 player 객체가 있는 경우
-  if (row && row.player) return isGK(row.player);
+    const cleanGKOnly = cleanAll.filter(row => {
+      if (row && row.player) return isGK(row.player);
+      if (row && row.pos) return String(row.pos).toUpperCase() === "GK";
+      if (row && row.playerId) return isGK(playerById.get(row.playerId));
+      if (row && row.id) return isGK(playerById.get(row.id));
+      return false;
+    });
 
-  // 2) row.pos에 포지션이 직접 있는 경우
-  if (row && row.pos) return String(row.pos).toUpperCase() === "GK";
-
-  // 3) row.playerId에 id만 있는 경우
-  if (row && row.playerId) return isGK(playerById.get(row.playerId));
-
-  // 4) 혹시 row.id가 playerId인 경우(가끔 이렇게 구현됨)
-  if (row && row.id) return isGK(playerById.get(row.id));
-
-  return false;
-});
-
-renderLeadersWithLinks(
-  document.querySelector("#cleanSheetLeaders"),
-  "clean",
-  cleanGKOnly
-);
+    renderLeadersWithLinks(
+      document.querySelector("#cleanSheetLeaders"),
+      "clean",
+      cleanGKOnly
+    );
   }
-if (page === "player") {
-  const params = new URLSearchParams(location.search);
-  const playerId = params.get("id");
 
-  const title = document.querySelector("#playerTitle");
-  const profile = document.querySelector("#playerProfile");
-  const statsBox = document.querySelector("#playerStats");
-  const matchesBox = document.querySelector("#playerMatches");
-  const valuePill = document.querySelector("#valuePill");
-  const breakdownBox = document.querySelector("#valueBreakdown");
+  if (page === "player") {
+    const params = new URLSearchParams(location.search);
+    const playerId = params.get("id");
 
-  if (!playerId) {
-    title.textContent = "선수";
-    profile.innerHTML = `<div class="small">id 파라미터가 없어. 예: player.html?id=p1</div>`;
-    statsBox.innerHTML = `<div class="small">-</div>`;
-    matchesBox.innerHTML = `<div class="small">-</div>`;
-  } else {
-    const card = computePlayerCard(data, playerId);
-    if (!card) {
+    const title = document.querySelector("#playerTitle");
+    const profile = document.querySelector("#playerProfile");
+    const statsBox = document.querySelector("#playerStats");
+    const matchesBox = document.querySelector("#playerMatches");
+    const valuePill = document.querySelector("#valuePill");
+    const breakdownBox = document.querySelector("#valueBreakdown");
+
+    if (!playerId) {
       title.textContent = "선수";
-      profile.innerHTML = `<div class="small">선수를 찾을 수 없어: ${playerId}</div>`;
+      profile.innerHTML = `<div class="small">id 파라미터가 없어. 예: player.html?id=p1</div>`;
       statsBox.innerHTML = `<div class="small">-</div>`;
       matchesBox.innerHTML = `<div class="small">-</div>`;
     } else {
-      const p = card.player;
-      title.textContent = `${p.name}`;
+      const card = computePlayerCard(data, playerId);
+      if (!card) {
+        title.textContent = "선수";
+        profile.innerHTML = `<div class="small">선수를 찾을 수 없어: ${playerId}</div>`;
+        statsBox.innerHTML = `<div class="small">-</div>`;
+        matchesBox.innerHTML = `<div class="small">-</div>`;
+      } else {
+        const p = card.player;
+        title.textContent = `${p.name}`;
 
-      profile.innerHTML = `
-        <div class="small">
-          팀: <b>${p.team}</b><br/>
-          포지션: <b>${p.pos || "-"}</b><br/>
-          팀 경기: ${card.teamPlayed} (승${card.teamW}/무${card.teamD}/패${card.teamL})
-        </div>
-      `;
+        profile.innerHTML = `
+          <div class="small">
+            팀: <b>${p.team}</b><br/>
+            포지션: <b>${p.pos || "-"}</b><br/>
+            팀 경기: ${card.teamPlayed} (승${card.teamW}/무${card.teamD}/패${card.teamL})
+          </div>
+        `;
 
-      // 몸값 계산
-      const val = computePlayerValue(card);
-      if (valuePill) valuePill.textContent = `💰 몸값: ${val.value}`;
-      if (breakdownBox) breakdownBox.innerHTML = val.breakdown.map(x => `• ${x}`).join("<br/>");
+        const val = computePlayerValue(card);
+        if (valuePill) valuePill.textContent = `💰 몸값: ${val.valueText || val.value}`;
+        if (breakdownBox) breakdownBox.innerHTML = (val.breakdown || []).map(x => `• ${x}`).join("<br/>");
 
-      // 기록 요약 표
-      renderTable(statsBox, ["항목","수치"], [
-        ["득점", card.goals],
-        ["어시스트", card.assists],
-        ["클린시트(GK/DF)", card.cleanSheets],
-      ]);
-         renderMobileList(statsBox, [
-  { title: "기록 요약", badge: "", kvs: [
-    ["득점", card.goals],
-    ["어시스트", card.assists],
-    ["클린시트(GK/DF)", card.cleanSheets],
-  ]}
-]);
+        renderTable(statsBox, ["항목", "수치"], [
+          ["득점", card.goals],
+          ["어시스트", card.assists],
+          ["클린시트(GK/DF)", card.cleanSheets],
+        ]);
 
-      // 참여 경기
-      renderPlayerMatches(matchesBox, data, playerId);
+        renderMobileList(statsBox, [
+          {
+            title: "기록 요약",
+            badge: "",
+            kvs: [
+              ["득점", card.goals],
+              ["어시스트", card.assists],
+              ["클린시트(GK/DF)", card.cleanSheets],
+            ]
+          }
+        ]);
+
+        renderPlayerMatches(matchesBox, data, playerId);
+      }
     }
   }
-}
 
-     if (page === "players") {
-  const teamSel = document.querySelector("#playerTeamFilter");
-  const searchInp = document.querySelector("#playerSearch");
-  const listBox = document.querySelector("#playersList");
-  const rankBox = document.querySelector("#playersGoalRank");
-  const countPill = document.querySelector("#playersCount");
-const valueRankBox = document.querySelector("#playersValueRank");
-  // 팀 필터 옵션
-  teamSel.innerHTML = "";
-  teamSel.appendChild(el("option", { value: "__ALL__", text: "전체 팀" }));
-  (data.teams || []).forEach(t => teamSel.appendChild(el("option", { value: t, text: t })));
+  if (page === "players") {
+    const teamSel = document.querySelector("#playerTeamFilter");
+    const searchInp = document.querySelector("#playerSearch");
+    const listBox = document.querySelector("#playersList");
+    const rankBox = document.querySelector("#playersGoalRank");
+    const countPill = document.querySelector("#playersCount");
+    const valueRankBox = document.querySelector("#playersValueRank");
 
-  const render = () => {
-    const team = teamSel.value;
-    const q = (searchInp.value || "").trim();
+    teamSel.innerHTML = "";
+    teamSel.appendChild(el("option", { value: "__ALL__", text: "전체 팀" }));
+    (data.teams || []).forEach(t => teamSel.appendChild(el("option", { value: t, text: t })));
 
-    const goalsMap = computePlayerGoalsMap(data);
+    const render = () => {
+      const team = teamSel.value;
+      const q = (searchInp.value || "").trim();
 
-    let players = (data.players || []).slice();
-    if (team !== "__ALL__") players = players.filter(p => p.team === team);
-    if (q) players = players.filter(p => p.name.includes(q));
+      const goalsMap = computePlayerGoalsMap(data);
 
-    // 이름 정렬
-    players.sort((a,b)=> a.team.localeCompare(b.team,"ko") || a.name.localeCompare(b.name,"ko"));
+      let players = (data.players || []).slice();
+      if (team !== "__ALL__") players = players.filter(p => p.team === team);
+      if (q) players = players.filter(p => p.name.includes(q));
 
-    countPill.textContent = `표시: ${players.length}명`;
+      players.sort((a, b) => a.team.localeCompare(b.team, "ko") || a.name.localeCompare(b.name, "ko"));
 
-    // 선수 목록: PC표 + 모바일 카드(모바일에선 표 숨김/카드 보임)
-    const listRows = players.map((p, i) => ([
-      i+1,
-      p.name, // 아래에서 링크로 바꿔 렌더링할 거라 renderTable 대신 커스텀
-      p.team,
-      goalsMap.get(p.id) || 0
-    ]));
+      countPill.textContent = `표시: ${players.length}명`;
 
-    // 커스텀 테이블(이름 링크)
-    const table = el("table", { class: "table" });
-    const thead = el("thead");
-    const trh = el("tr");
-    ["번호","선수","팀","골"].forEach(h => trh.appendChild(el("th",{text:h})));
-    thead.appendChild(trh);
+      const table = el("table", { class: "table" });
+      const thead = el("thead");
+      const trh = el("tr");
+      ["번호", "선수", "팀", "골"].forEach(h => trh.appendChild(el("th", { text: h })));
+      thead.appendChild(trh);
 
-    const tbody = el("tbody");
-    players.forEach((p, idx) => {
-      const tr = el("tr");
-      tr.appendChild(el("td", { text: String(idx+1) }));
+      const tbody = el("tbody");
+      players.forEach((p, idx) => {
+        const tr = el("tr");
+        tr.appendChild(el("td", { text: String(idx + 1) }));
 
-      const tdName = document.createElement("td");
-      const a = document.createElement("a");
-    a.href = `player.html?id=${encodeURIComponent(p.id)}`;
-      a.className = "playerLink";
-      a.textContent = p.name;
-      tdName.appendChild(a);
-      tr.appendChild(tdName);
+        const tdName = document.createElement("td");
+        const a = document.createElement("a");
+        a.href = `player.html?id=${encodeURIComponent(p.id)}`;
+        a.className = "playerLink";
+        a.textContent = p.name;
+        tdName.appendChild(a);
+        tr.appendChild(tdName);
 
-      tr.appendChild(el("td", { text: p.team }));
-      tr.appendChild(el("td", { text: String(goalsMap.get(p.id) || 0) }));
-      tbody.appendChild(tr);
-    });
+        tr.appendChild(el("td", { text: p.team }));
+        tr.appendChild(el("td", { text: String(goalsMap.get(p.id) || 0) }));
+        tbody.appendChild(tr);
+      });
 
-    table.appendChild(thead);
-    table.appendChild(tbody);
+      table.appendChild(thead);
+      table.appendChild(tbody);
 
-    listBox.innerHTML = "";
-    listBox.appendChild(table);
+      listBox.innerHTML = "";
+      listBox.appendChild(table);
 
-    // 모바일 카드
-    renderMobileList(listBox, players.map(p => ({
-  title: p.name,
-  badge: `${goalsMap.get(p.id) || 0}골`,
-  href: `player.html?id=${encodeURIComponent(p.id)}`,   // ✅ 추가
-  kvs: [["팀", p.team]],
-})));
+      renderMobileList(listBox, players.map(p => ({
+        title: p.name,
+        badge: `${goalsMap.get(p.id) || 0}골`,
+        href: `player.html?id=${encodeURIComponent(p.id)}`,
+        kvs: [["팀", p.team]],
+      })));
 
-    // 득점 랭킹(전체)
-    const allRank = computeAllPlayerGoalRanking(data);
-    const medalOf = (i)=>(i===0?"🥇":i===1?"🥈":i===2?"🥉":"");
-    renderTable(rankBox, ["순위","선수","팀","골"],
-      allRank.map((r,i)=>[i+1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
-    );
-    renderMobileList(rankBox, allRank.map((r,i)=>({
-  title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
-  badge: `${r.goals}골`,
-  href: `player.html?id=${encodeURIComponent(r.playerId)}`, // ✅ 추가
-  kvs: [["팀", r.team]],
-})));
-       // =======================
-// 💰 몸값 랭킹 (전체선수)
-// =======================
-if (valueRankBox) {
-  const rows = (data.players || []).map(p => {
-    const card = computePlayerCard(data, p.id);
-    const val = card ? computePlayerValue(card) : { value: 0 };
-    return {
-      playerId: p.id,
-      name: p.name,
-      team: p.team,
-      value: val.value
+      const allRank = computeAllPlayerGoalRanking(data);
+      const medalOf = (i) => (i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "");
+
+      renderTable(rankBox, ["순위", "선수", "팀", "골"],
+        allRank.map((r, i) => [i + 1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
+      );
+
+      renderMobileList(rankBox, allRank.map((r, i) => ({
+        title: `${medalOf(i)} ${i + 1}위 · ${r.name}`.trim(),
+        badge: `${r.goals}골`,
+        href: `player.html?id=${encodeURIComponent(r.playerId)}`,
+        kvs: [["팀", r.team]],
+      })));
+
+      // 💰 몸값 랭킹(있으면 그리기)
+      if (valueRankBox) {
+        const rows = (data.players || []).map(p => {
+          const card = computePlayerCard(data, p.id);
+          const val = card ? computePlayerValue(card) : { value: 0 };
+          return { playerId: p.id, name: p.name, team: p.team, value: val.value };
+        });
+
+        rows.sort((a, b) =>
+          (b.value - a.value) ||
+          a.team.localeCompare(b.team, "ko") ||
+          a.name.localeCompare(b.name, "ko")
+        );
+
+        const t = el("table", { class: "table" });
+        const th = el("thead");
+        const thr = el("tr");
+        ["순위", "선수", "팀", "몸값"].forEach(h => thr.appendChild(el("th", { text: h })));
+        th.appendChild(thr);
+
+        const tb = el("tbody");
+        rows.forEach((r, i) => {
+          const tr = el("tr");
+          tr.appendChild(el("td", { text: String(i + 1) }));
+
+          const tdName = document.createElement("td");
+          const a = document.createElement("a");
+          a.href = `player.html?id=${encodeURIComponent(r.playerId)}`;
+          a.className = "playerLink";
+          a.textContent = r.name;
+          tdName.appendChild(a);
+          tr.appendChild(tdName);
+
+          tr.appendChild(el("td", { text: r.team }));
+          tr.appendChild(el("td", { text: String(r.value) }));
+          tb.appendChild(tr);
+        });
+
+        t.appendChild(th);
+        t.appendChild(tb);
+
+        valueRankBox.innerHTML = "";
+        valueRankBox.appendChild(t);
+
+        renderMobileList(valueRankBox, rows.map((r, i) => ({
+          title: `${i + 1}위 · ${r.name}`,
+          badge: `💰 ${r.value}억`,
+          href: `player.html?id=${encodeURIComponent(r.playerId)}`,
+          kvs: [["팀", r.team]],
+        })));
+      }
     };
-  });
 
-  rows.sort((a,b) =>
-    (b.value - a.value) ||
-    a.team.localeCompare(b.team, "ko") ||
-    a.name.localeCompare(b.name, "ko")
-  );
+    teamSel.addEventListener("change", render);
+    searchInp.addEventListener("input", render);
+    render();
+  }
 
-  // PC 테이블
-  const table = el("table", { class: "table" });
-  const thead = el("thead");
-  const trh = el("tr");
-  ["순위","선수","팀","몸값"].forEach(h =>
-    trh.appendChild(el("th",{text:h}))
-  );
-  thead.appendChild(trh);
-
-  const tbody = el("tbody");
-  rows.forEach((r, i) => {
-    const tr = el("tr");
-    tr.appendChild(el("td", { text: String(i+1) }));
-
-    const tdName = document.createElement("td");
-    const a = document.createElement("a");
-    a.href = `player.html?id=${encodeURIComponent(r.playerId)}`;
-    a.className = "playerLink";
-    a.textContent = r.name;
-    tdName.appendChild(a);
-    tr.appendChild(tdName);
-
-    tr.appendChild(el("td", { text: r.team }));
-    tr.appendChild(el("td", { text: String(r.value) }));
-    tbody.appendChild(tr);
-  });
-
-  table.appendChild(thead);
-  table.appendChild(tbody);
-
-  valueRankBox.innerHTML = "";
-  valueRankBox.appendChild(table);
-
-  // 모바일 카드
-  renderMobileList(valueRankBox, rows.map((r, i) => ({
-    title: `${i+1}위 · ${r.name}`,
-    badge: `💰 ${r.value}`,
-    kvs: [["팀", r.team]],
-  })));
-}
-  };
-
-  teamSel.addEventListener("change", render);
-  searchInp.addEventListener("input", render);
-  render();
-}
   if (page === "team") {
     const params = new URLSearchParams(location.search);
     const team = params.get("team");
@@ -1139,7 +1129,7 @@ if (valueRankBox) {
     const scorersBox = document.querySelector("#teamScorers");
     const playersBox = document.querySelector("#teamPlayers");
     const matchesBox = document.querySelector("#teamMatches");
-    
+
     if (!team) {
       if (title) title.textContent = "팀";
       if (summaryBox) summaryBox.innerHTML = `<div class="small">team 파라미터가 없어. 예: team.html?team=팀임태원</div>`;
@@ -1152,38 +1142,38 @@ if (valueRankBox) {
       if (!s) {
         if (summaryBox) summaryBox.innerHTML = `<div class="small">팀을 찾을 수 없어: ${team}</div>`;
       } else {
-       const form = getTeamFormLastN(data, team, 3);
-const formText = form.map(x => x==="W"?"승":x==="D"?"무":x==="L"?"패":"-").join(" ");
+        const form = getTeamFormLastN(data, team, 3);
+        const formText = form.map(x => x === "W" ? "승" : x === "D" ? "무" : x === "L" ? "패" : "-").join(" ");
 
-summaryBox.innerHTML = `
-  <div class="small">
-    <b>${s.rank}위</b> · 승점 <b>${s.PTS}</b><br/>
-    ${s.P}경기 ${s.W}승 ${s.D}무 ${s.L}패<br/>
-    득점 ${s.GF} / 실점 ${s.GA} / 득실 ${s.GD}
-  </div>
-`;
+        summaryBox.innerHTML = `
+          <div class="small">
+            <b>${s.rank}위</b> · 승점 <b>${s.PTS}</b><br/>
+            ${s.P}경기 ${s.W}승 ${s.D}무 ${s.L}패<br/>
+            득점 ${s.GF} / 실점 ${s.GA} / 득실 ${s.GD}
+          </div>
+        `;
 
-const formRow = document.createElement("div");
-formRow.className = "formRow";
-formRow.appendChild(Object.assign(document.createElement("span"), { className: "formLabel", textContent: "최근 3경기" }));
-formRow.appendChild(renderFormDots(form));
-formRow.appendChild(Object.assign(document.createElement("span"), { className: "formText", textContent: `(${formText})` }));
+        const formRow = document.createElement("div");
+        formRow.className = "formRow";
+        formRow.appendChild(Object.assign(document.createElement("span"), { className: "formLabel", textContent: "최근 3경기" }));
+        formRow.appendChild(renderFormDots(form));
+        formRow.appendChild(Object.assign(document.createElement("span"), { className: "formText", textContent: `(${formText})` }));
 
-summaryBox.appendChild(formRow);
-
+        summaryBox.appendChild(formRow);
       }
 
       const top = getTeamTopScorers(data, team);
       if (!top.length) {
         if (scorersBox) scorersBox.innerHTML = `<div class="small">아직 득점 기록이 없어.</div>`;
       } else {
-        renderTable(scorersBox, ["순위","선수","골"], top.map((r,i)=>[i+1, r.name, r.goals]));
-        renderMobileList(scorersBox, top.map((r,i)=>({ title:`${i+1}위 · ${r.name}`, badge:`${r.goals}골`, kvs:[] })));
+        renderTable(scorersBox, ["순위", "선수", "골"], top.map((r, i) => [i + 1, r.name, r.goals]));
+        renderMobileList(scorersBox, top.map((r, i) => ({ title: `${i + 1}위 · ${r.name}`, badge: `${r.goals}골`, kvs: [] })));
       }
-         renderTeamPlayers(playersBox, data, team);
+
+      renderTeamPlayers(playersBox, data, team);
 
       const tMatches = data.matches.filter(m => m.home === team || m.away === team).slice()
-        .sort((a,b) => (a.round - b.round) || (a.id - b.id));
+        .sort((a, b) => (a.round - b.round) || (a.id - b.id));
       if (!tMatches.length) {
         if (matchesBox) matchesBox.innerHTML = `<div class="small">경기가 없어.</div>`;
       } else {
@@ -1193,9 +1183,7 @@ summaryBox.appendChild(formRow);
     }
   }
 
-  // ===============================
-  // THEME SWITCH (GLOBAL)
-  // ===============================
+  // THEME SWITCH
   const html = document.documentElement;
   const savedTheme = localStorage.getItem("league_theme") || "blue";
   html.setAttribute("data-theme", savedTheme);
@@ -1206,7 +1194,7 @@ summaryBox.appendChild(formRow);
     btn.className = "themeBtn";
 
     const themes = ["blue", "purple", "green", "red"];
-    const labels = { blue:"블루", purple:"퍼플", green:"그린", red:"레드" };
+    const labels = { blue: "블루", purple: "퍼플", green: "그린", red: "레드" };
 
     btn.textContent = `테마: ${labels[savedTheme]}`;
     btn.onclick = () => {
@@ -1220,11 +1208,8 @@ summaryBox.appendChild(formRow);
     nav.appendChild(btn);
   }
 
-  // mobile app tabbar
   injectTabbar(data, page);
 }
-
-
 
 window.addEventListener("DOMContentLoaded", () => {
   boot().catch(err => {
