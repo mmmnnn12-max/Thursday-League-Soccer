@@ -666,11 +666,12 @@ function injectTabbar(data, page){
   inner.className = "tabbarInner";
 
   const items = [
-    { key:"standings", href:"index.html",    label:"순위", ico:"🏆" },
-    { key:"schedule",  href:"schedule.html", label:"일정", ico:"📅" },
-    { key:"stats",     href:"stats.html",    label:"기록", ico:"📊" },
-    { key:"team",      href:"#",             label:"팀",   ico:"👥", isTeam:true }
-  ];
+  { key:"standings", href:"index.html",    label:"순위", ico:"🏆" },
+  { key:"schedule",  href:"schedule.html", label:"일정", ico:"📅" },
+  { key:"stats",     href:"stats.html",    label:"기록", ico:"📊" },
+  { key:"players",   href:"players.html",  label:"선수", ico:"🧍" },
+  { key:"values",    href:"values.html",   label:"몸값", ico:"💰" },
+];
 
   for (const it of items){
     const a = document.createElement("a");
