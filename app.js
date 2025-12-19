@@ -197,8 +197,30 @@ function computeAssistLeaders(data) {
     if (!playersById.has(a.playerId)) continue;
     score.set(a.playerId, (score.get(a.playerId) || 0) + (a.count || 0));
   }
-     function computePlayerValue() {
-  return 0; // 임시 값
+   function computePlayerValue(card) {
+  // card: computePlayerCard()가 리턴한 객체
+  // { goals, assists, cleanSheets, teamW, teamD, teamL, ... }
+
+  const g = card.goals || 0;
+  const a = card.assists || 0;
+  const cs = card.cleanSheets || 0;
+
+  // 점수 규칙(원하는대로 바꿀 수 있음)
+  const score =
+    g * 10 +      // 골 10점
+    a * 7  +      // 어시 7점
+    cs * 6 +      // 클린시트 6점
+    (card.teamW || 0) * 1; // 팀 승리 보너스(가볍게)
+
+  return {
+    value: score,
+    breakdown: [
+      `⚽ 득점 ${g} × 10 = ${g*10}`,
+      `🅰️ 어시 ${a} × 7 = ${a*7}`,
+      `🧤 클린시트 ${cs} × 6 = ${cs*6}`,
+      `🏆 팀승 ${card.teamW || 0} × 1 = ${(card.teamW || 0)*1}`,
+    ]
+  };
 }
 
   const rows = Array.from(score.entries()).map(([playerId, assists]) => {
@@ -803,7 +825,7 @@ if (page === "player") {
       renderPlayerMatches(matchesBox, data, playerId);
     }
   }
-}1
+}
 
      if (page === "players") {
   const teamSel = document.querySelector("#playerTeamFilter");
@@ -854,7 +876,7 @@ if (page === "player") {
 
       const tdName = document.createElement("td");
       const a = document.createElement("a");
-      a.href = `player.html?player=${encodeURIComponent(p.id)}`;
+    a.href = `player.html?id=${encodeURIComponent(p.id)}`;
       a.className = "playerLink";
       a.textContent = p.name;
       tdName.appendChild(a);
@@ -987,20 +1009,8 @@ summaryBox.appendChild(formRow);
   injectTabbar(data, page);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  boot().catch(err => {
-    console.error(err);
-    document.body.innerHTML = `
-      <div style="padding:20px;color:#fff;font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;">
-        에러: ${err.message}\n\n${err.stack || "(no stack)"}
-      </div>
-    `;
-  });
-});
-// ✅ 클릭 시 에러 방지용: 전역으로 등록
-window.computePlayerValue = function computePlayerValue(playerId, data) {
-  return 0; // 나중에 진짜 계산으로 바꿔도 됨
-};
+
+
 window.addEventListener("DOMContentLoaded", () => {
   boot().catch(err => {
     console.error(err);
