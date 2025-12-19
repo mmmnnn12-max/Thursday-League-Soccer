@@ -548,6 +548,25 @@ body{
 .table thead th{ background: rgba(233,238,252,.035); }
 .table tbody tr:hover{ background: rgba(var(--accent-rgb), .06); }
 
+
+.playerLink{
+  font-weight: 900;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(233,238,252,.20);
+  padding-bottom: 1px;
+}
+.playerLink:hover{ border-bottom-color: rgba(var(--accent2-rgb), .7); }
+
+.pTag{
+  display:inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(233,238,252,.12);
+  background: rgba(233,238,252,.06);
+  font-weight: 900;
+  font-size: 12px;
+  opacity: .95;
+}
 .teamLink, .playerLink{
   border-color: rgba(var(--accent2-rgb), .20);
   background: rgba(var(--accent-rgb), .08);
