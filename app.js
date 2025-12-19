@@ -982,7 +982,7 @@ if (page === "player") {
   const listBox = document.querySelector("#playersList");
   const rankBox = document.querySelector("#playersGoalRank");
   const countPill = document.querySelector("#playersCount");
-
+const valueRankBox = document.querySelector("#playersValueRank");
   // 팀 필터 옵션
   teamSel.innerHTML = "";
   teamSel.appendChild(el("option", { value: "__ALL__", text: "전체 팀" }));
@@ -1062,6 +1062,67 @@ if (page === "player") {
   href: `player.html?id=${encodeURIComponent(r.playerId)}`, // ✅ 추가
   kvs: [["팀", r.team]],
 })));
+       // =======================
+// 💰 몸값 랭킹 (전체선수)
+// =======================
+if (valueRankBox) {
+  const rows = (data.players || []).map(p => {
+    const card = computePlayerCard(data, p.id);
+    const val = card ? computePlayerValue(card) : { value: 0 };
+    return {
+      playerId: p.id,
+      name: p.name,
+      team: p.team,
+      value: val.value
+    };
+  });
+
+  rows.sort((a,b) =>
+    (b.value - a.value) ||
+    a.team.localeCompare(b.team, "ko") ||
+    a.name.localeCompare(b.name, "ko")
+  );
+
+  // PC 테이블
+  const table = el("table", { class: "table" });
+  const thead = el("thead");
+  const trh = el("tr");
+  ["순위","선수","팀","몸값"].forEach(h =>
+    trh.appendChild(el("th",{text:h}))
+  );
+  thead.appendChild(trh);
+
+  const tbody = el("tbody");
+  rows.forEach((r, i) => {
+    const tr = el("tr");
+    tr.appendChild(el("td", { text: String(i+1) }));
+
+    const tdName = document.createElement("td");
+    const a = document.createElement("a");
+    a.href = `player.html?id=${encodeURIComponent(r.playerId)}`;
+    a.className = "playerLink";
+    a.textContent = r.name;
+    tdName.appendChild(a);
+    tr.appendChild(tdName);
+
+    tr.appendChild(el("td", { text: r.team }));
+    tr.appendChild(el("td", { text: String(r.value) }));
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+  valueRankBox.innerHTML = "";
+  valueRankBox.appendChild(table);
+
+  // 모바일 카드
+  renderMobileList(valueRankBox, rows.map((r, i) => ({
+    title: `${i+1}위 · ${r.name}`,
+    badge: `💰 ${r.value}`,
+    kvs: [["팀", r.team]],
+  })));
+}
   };
 
   teamSel.addEventListener("change", render);
