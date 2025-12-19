@@ -424,3 +424,46 @@ button.ghost{ background: rgba(233,238,252,.04); }
     color: var(--text);
   }
 }
+/* =========================
+   MOBILE standings ratio fix
+   ========================= */
+@media (max-width: 520px){
+
+  /* 순위 카드: 제목줄(팀명) 길어도 안깨지게 */
+  .mTop{
+    align-items: flex-start;
+  }
+  .mTop > div:first-child{
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.2;
+    word-break: keep-all;
+  }
+  .mTop > div:last-child{
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* 순위 메타(경기/승무패/득실 등): 2열이 빡빡하면 자동으로 1열로 */
+  .mMeta{
+    grid-template-columns: 1fr;   /* ✅ 비율 문제 대부분 이걸로 해결됨 */
+    gap: 8px;
+  }
+  .kv{
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(233,238,252,.10);
+    background: rgba(233,238,252,.03);
+  }
+  .k{ opacity: .75; }
+  .v{ white-space: nowrap; }
+
+  /* 카드 간격/여백 살짝 조정 */
+  .mItem{
+    padding: 12px;
+  }
+  .container{
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
