@@ -1,5 +1,11 @@
 // admin.js (운영자 페이지 전용)
-
+// admin.js 맨 위
+const PW = "mmmnnn12@@";
+const input = prompt("운영자 비밀번호를 입력하세요");
+if (input !== PW) {
+  document.body.innerHTML = "접근 불가";
+  throw new Error("Unauthorized");
+}
 async function loadData() {
   const res = await fetch("matches.json", { cache: "no-store" });
   if (!res.ok) throw new Error("matches.json을 불러오지 못했어요.");
