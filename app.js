@@ -706,3 +706,23 @@ window.addEventListener("DOMContentLoaded", () => {
     `;
   });
 });
+window.addEventListener("DOMContentLoaded", () => {
+  boot().catch(err => {
+    console.error(err);
+    document.body.innerHTML = `
+      <div style="
+        padding:20px;
+        color:#fff;
+        background:#000;
+        font-family:ui-monospace, Menlo, monospace;
+        white-space:pre-wrap;
+      ">
+에러 메시지:
+${err.message}
+
+에러 위치:
+${err.stack || "(stack 없음)"}
+      </div>
+    `;
+  });
+});
