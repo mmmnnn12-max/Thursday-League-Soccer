@@ -589,6 +589,19 @@ async function boot() {
 
     renderTeamGoals(document.querySelector("#teamGoals"), computeTeamGoals(data));
     renderTopScorers(document.querySelector("#topScorers"), computeScorers(data));
+    // 🅰️ 어시스트 랭킹
+renderLeadersWithLinks(
+  document.querySelector("#assistLeaders"),
+  "assist",
+  computeAssistLeaders(data)
+);
+
+// 🧤 클린시트 랭킹
+renderLeadersWithLinks(
+  document.querySelector("#cleanSheetLeaders"),
+  "clean",
+  computeCleanSheetLeaders(data)
+);
   }
 
   if (page === "team") {
