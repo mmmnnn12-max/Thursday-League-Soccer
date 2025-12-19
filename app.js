@@ -388,6 +388,96 @@ function renderTopScorers(container, rows) {
 
 
 /* ------------------ Team helpers ------------------ */
+
+function computePlayerCard(data, playerId){
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const player = playersById.get(playerId);
+  if (!player) return null;
+
+  // 팀이 치른 "결과 있는 경기" 수
+  const teamPlayedMatches = (data.matches || [])
+    .filter(m => (m.home === player.team || m.away === player.team) && m.hg !== null && m.ag !== null);
+
+  // 득점/어시 합계
+  const goals = (data.goals || [])
+    .filter(g => g.playerId === playerId)
+    .reduce((a,g) => a + (g.count || 0), 0);
+
+  const assists = (data.assists || [])
+    .filter(a => a.playerId === playerId)
+    .reduce((a,x) => a + (x.count || 0), 0);
+
+  // 클린시트(GK/DF) — 네 로직 재활용: 팀이 무실점인 경기만 카운트(결과 있는 경기 기준)
+  let cleanSheets = 0;
+  const pos = String(player.pos || "").toUpperCase();
+  if (pos === "GK" || pos === "DF"){
+    for (const m of teamPlayedMatches){
+      const isHome = (player.team === m.home);
+      const ga = isHome ? m.ag : m.hg;
+      if (ga === 0) cleanSheets += 1;
+    }
+  }
+
+  // 팀 성적(결과 있는 경기 기준)
+  let teamW=0, teamD=0, teamL=0;
+  for (const m of teamPlayedMatches){
+    const isHome = (player.team === m.home);
+    const gf = isHome ? m.hg : m.ag;
+    const ga = isHome ? m.ag : m.hg;
+    if (gf > ga) teamW++;
+    else if (gf < ga) teamL++;
+    else teamD++;
+  }
+
+  return {
+    player,
+    goals,
+    assists,
+    cleanSheets,
+    teamPlayed: teamPlayedMatches.length,
+    teamW, teamD, teamL,
+  };
+}
+
+function renderPlayerMatches(container, data, playerId){
+  if (!container) return;
+
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const p = playersById.get(playerId);
+  if (!p){
+    container.innerHTML = `<div class="small">선수 정보를 찾을 수 없어.</div>`;
+    return;
+  }
+
+  // 현재 데이터 구조상 “출전 기록”이 따로 없어서,
+  // 우선은 "팀 경기 전체"를 보여주고(결과/일정), 골/어시가 있으면 표시해줌
+  const byMatchGoal = new Map();
+  for (const g of (data.goals || [])){
+    if (g.playerId !== playerId) continue;
+    byMatchGoal.set(g.matchId, (byMatchGoal.get(g.matchId) || 0) + (g.count || 0));
+  }
+  const byMatchAst = new Map();
+  for (const a of (data.assists || [])){
+    if (a.playerId !== playerId) continue;
+    byMatchAst.set(a.matchId, (byMatchAst.get(a.matchId) || 0) + (a.count || 0));
+  }
+
+  const teamMatches = (data.matches || [])
+    .filter(m => m.home === p.team || m.away === p.team)
+    .slice()
+    .sort((a,b) => (a.round - b.round) || (a.id - b.id));
+
+  const items = teamMatches.map(m => {
+    const score = (m.hg === null || m.ag === null) ? "미정" : `${m.hg}:${m.ag}`;
+    const date = (m.date && m.date.trim()) ? ` · ${m.date}` : "";
+    const g = byMatchGoal.get(m.id) || 0;
+    const a = byMatchAst.get(m.id) || 0;
+    const tag = (g || a) ? ` · ${g ? `⚽${g}` : ""}${(g && a) ? " " : ""}${a ? `🅰️${a}` : ""}` : "";
+    return [ `R${m.round}`, `${m.home} vs ${m.away}`, `${score}${date}${tag}` ];
+  });
+
+  renderTable(container, ["라운드","경기","결과"], items);
+}
 function getTeamMatches(data, team) {
   return data.matches
     .filter(m => m.home === team || m.away === team)
