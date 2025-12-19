@@ -270,6 +270,24 @@ function computeAssistLeaders(data) {
     ]
   };
 }
+
+function computeValueRanking(data) {
+  const rows = (data.players || [])
+    .map(p => {
+      const card = computePlayerCard(data, p.id);
+      if (!card) return null;
+      const val = computePlayerValue(card); // { value:number, valueText:string, breakdown:[] }
+      return { playerId: p.id, name: p.name, team: p.team, value: val.value };
+    })
+    .filter(Boolean)
+    .sort((a,b) =>
+      (b.value - a.value) ||
+      a.team.localeCompare(b.team, "ko") ||
+      a.name.localeCompare(b.name, "ko")
+    );
+
+  return rows;
+}
 function computeCleanSheetLeaders(data) {
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
   const clean = new Map(); // playerId -> clean sheets
@@ -739,7 +757,27 @@ async function boot() {
     }
   }
      
+if (page === "values") {
+  const box = document.querySelector("#valueRank");
+  const top10 = computeValueRanking(data).slice(0, 10);
 
+  const medalOf = (i) => (i===0?"🥇":i===1?"🥈":i===2?"🥉":"");
+
+  // PC 표
+  renderTable(box, ["순위","선수","팀","몸값(억)"], top10.map((r,i)=>[
+    i+1,
+    `${medalOf(i)} ${r.name}`.trim(),
+    r.team,
+    r.value
+  ]));
+
+  // 모바일 카드
+  renderMobileList(box, top10.map((r,i)=>({
+    title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
+    badge: `${r.value}억`,
+    kvs: [["팀", r.team]]
+  })));
+}
   if (page === "schedule") {
     const box = document.querySelector("#schedule");
     const btn = document.querySelector("#btnMore");
