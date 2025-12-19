@@ -156,7 +156,116 @@ function computeScorers(data) {
 
   return rows;
 }
+function computeAssistLeaders(data) {
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const score = new Map(); // playerId -> assists
 
+  for (const a of (data.assists || [])) {
+    if (!playersById.has(a.playerId)) continue;
+    score.set(a.playerId, (score.get(a.playerId) || 0) + (a.count || 0));
+  }
+
+  const rows = Array.from(score.entries()).map(([playerId, assists]) => {
+    const p = playersById.get(playerId);
+    return { playerId, name: p.name, team: p.team, assists };
+  });
+
+  rows.sort((a,b) =>
+    (b.assists - a.assists) ||
+    a.team.localeCompare(b.team, "ko") ||
+    a.name.localeCompare(b.name, "ko")
+  );
+
+  return rows;
+}
+function computeCleanSheetLeaders(data) {
+  const playersById = new Map((data.players || []).map(p => [p.id, p]));
+  const clean = new Map(); // playerId -> clean sheets
+
+  for (const p of (data.players || [])) clean.set(p.id, 0);
+
+  for (const m of (data.matches || [])) {
+    if (m.hg === null || m.ag === null) continue; // 결과 없는 경기 제외
+
+    for (const p of (data.players || [])) {
+      const pos = (p.pos || "").toUpperCase();
+      if (pos !== "GK" && pos !== "DF") continue; // GK/DF만 클린시트 집계
+
+      const isHome = p.team === m.home;
+      const isAway = p.team === m.away;
+      if (!isHome && !isAway) continue;
+
+      const ga = isHome ? m.ag : m.hg; // 해당 선수 팀 실점
+      if (ga === 0) clean.set(p.id, (clean.get(p.id) || 0) + 1);
+    }
+  }
+
+  const rows = Array.from(clean.entries())
+    .map(([playerId, cs]) => {
+      const p = playersById.get(playerId);
+      if (!p) return null;
+      return { playerId, name: p.name, team: p.team, cs };
+    })
+    .filter(Boolean);
+
+  rows.sort((a,b) =>
+    (b.cs - a.cs) ||
+    a.team.localeCompare(b.team, "ko") ||
+    a.name.localeCompare(b.name, "ko")
+  );
+
+  return rows;
+}
+function renderLeadersWithLinks(container, kind, rows) {
+  // kind: "assist" | "clean"
+  if (!rows || rows.length === 0) {
+    container.innerHTML = `<div class="small">아직 기록이 없어.</div>`;
+    return;
+  }
+
+  const medalOf = (i) => (i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : "");
+  const label = (kind === "assist") ? "어시" : "CS";
+
+  // PC 표
+  const table = el("table", { class: "table" });
+  const thead = el("thead");
+  const trh = el("tr");
+  ["순위","선수","팀", label].forEach(h => trh.appendChild(el("th", { text: h })));
+  thead.appendChild(trh);
+
+  const tbody = el("tbody");
+  rows.forEach((r, i) => {
+    const tr = el("tr");
+    tr.appendChild(el("td", { text: String(i+1) }));
+
+    // 선수 링크
+    const tdName = document.createElement("td");
+    const a = document.createElement("a");
+    a.href = `player.html?id=${encodeURIComponent(r.playerId)}`;
+    a.className = "playerLink";
+    a.textContent = `${medalOf(i)} ${r.name}`.trim();
+    tdName.appendChild(a);
+    tr.appendChild(tdName);
+
+    tr.appendChild(el("td", { text: r.team }));
+    tr.appendChild(el("td", { text: String(kind === "assist" ? r.assists : r.cs) }));
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+  container.innerHTML = "";
+  container.appendChild(table);
+
+  // 모바일 카드 리스트 (520px 이하에서만 보이도록 네 CSS/구조에 맞춰 출력)
+  renderMobileList(container, rows.map((r, i) => ({
+    title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
+    badge: `${kind === "assist" ? r.assists : r.cs}${label}`,
+    kvs: [["팀", r.team]]
+  })));
+}
 /* ------------------ Render ------------------ */
 function renderStandings(container, standings) {
   const table = el("table", { class: "table" });
