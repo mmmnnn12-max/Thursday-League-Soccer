@@ -165,6 +165,30 @@ function computeScorers(data) {
 
   return rows;
 }
+
+function computePlayerGoalsMap(data){
+  const map = new Map(); // playerId -> goals
+  for (const g of (data.goals || [])) {
+    map.set(g.playerId, (map.get(g.playerId) || 0) + (g.count || 0));
+  }
+  return map;
+}
+
+function computeAllPlayerGoalRanking(data){
+  const goalsMap = computePlayerGoalsMap(data);
+  const rows = (data.players || []).map(p => ({
+    playerId: p.id,
+    name: p.name,
+    team: p.team,
+    goals: goalsMap.get(p.id) || 0
+  }));
+  rows.sort((a,b)=>
+    (b.goals - a.goals) ||
+    a.team.localeCompare(b.team, "ko") ||
+    a.name.localeCompare(b.name, "ko")
+  );
+  return rows;
+}
 function computeAssistLeaders(data) {
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
   const score = new Map(); // playerId -> assists
@@ -780,6 +804,97 @@ if (page === "player") {
     }
   }
 }1
+
+     if (page === "players") {
+  const teamSel = document.querySelector("#playerTeamFilter");
+  const searchInp = document.querySelector("#playerSearch");
+  const listBox = document.querySelector("#playersList");
+  const rankBox = document.querySelector("#playersGoalRank");
+  const countPill = document.querySelector("#playersCount");
+
+  // 팀 필터 옵션
+  teamSel.innerHTML = "";
+  teamSel.appendChild(el("option", { value: "__ALL__", text: "전체 팀" }));
+  (data.teams || []).forEach(t => teamSel.appendChild(el("option", { value: t, text: t })));
+
+  const render = () => {
+    const team = teamSel.value;
+    const q = (searchInp.value || "").trim();
+
+    const goalsMap = computePlayerGoalsMap(data);
+
+    let players = (data.players || []).slice();
+    if (team !== "__ALL__") players = players.filter(p => p.team === team);
+    if (q) players = players.filter(p => p.name.includes(q));
+
+    // 이름 정렬
+    players.sort((a,b)=> a.team.localeCompare(b.team,"ko") || a.name.localeCompare(b.name,"ko"));
+
+    countPill.textContent = `표시: ${players.length}명`;
+
+    // 선수 목록: PC표 + 모바일 카드(모바일에선 표 숨김/카드 보임)
+    const listRows = players.map((p, i) => ([
+      i+1,
+      p.name, // 아래에서 링크로 바꿔 렌더링할 거라 renderTable 대신 커스텀
+      p.team,
+      goalsMap.get(p.id) || 0
+    ]));
+
+    // 커스텀 테이블(이름 링크)
+    const table = el("table", { class: "table" });
+    const thead = el("thead");
+    const trh = el("tr");
+    ["번호","선수","팀","골"].forEach(h => trh.appendChild(el("th",{text:h})));
+    thead.appendChild(trh);
+
+    const tbody = el("tbody");
+    players.forEach((p, idx) => {
+      const tr = el("tr");
+      tr.appendChild(el("td", { text: String(idx+1) }));
+
+      const tdName = document.createElement("td");
+      const a = document.createElement("a");
+      a.href = `player.html?player=${encodeURIComponent(p.id)}`;
+      a.className = "playerLink";
+      a.textContent = p.name;
+      tdName.appendChild(a);
+      tr.appendChild(tdName);
+
+      tr.appendChild(el("td", { text: p.team }));
+      tr.appendChild(el("td", { text: String(goalsMap.get(p.id) || 0) }));
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+
+    listBox.innerHTML = "";
+    listBox.appendChild(table);
+
+    // 모바일 카드
+    renderMobileList(listBox, players.map(p => ({
+      title: p.name,
+      badge: `${goalsMap.get(p.id) || 0}골`,
+      kvs: [["팀", p.team]],
+    })));
+
+    // 득점 랭킹(전체)
+    const allRank = computeAllPlayerGoalRanking(data);
+    const medalOf = (i)=>(i===0?"🥇":i===1?"🥈":i===2?"🥉":"");
+    renderTable(rankBox, ["순위","선수","팀","골"],
+      allRank.map((r,i)=>[i+1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
+    );
+    renderMobileList(rankBox, allRank.map((r,i)=>({
+      title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
+      badge: `${r.goals}골`,
+      kvs: [["팀", r.team]],
+    })));
+  };
+
+  teamSel.addEventListener("change", render);
+  searchInp.addEventListener("input", render);
+  render();
+}
   if (page === "team") {
     const params = new URLSearchParams(location.search);
     const team = params.get("team");
