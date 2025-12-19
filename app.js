@@ -743,57 +743,7 @@ summaryBox.appendChild(formRow);
       }
     }
   }
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Thursday League Soccer | 선수</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
 
-<body data-page="player">
-  <div class="topbar">
-    <div class="nav">
-      <div class="brand">Thursday League Soccer</div>
-      <div class="menu">
-        <a href="index.html">순위</a>
-        <a href="schedule.html">일정</a>
-        <a href="stats.html">기록</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="container">
-    <h1 id="playerTitle">선수</h1>
-
-    <div class="grid">
-      <div class="card">
-        <h2>프로필</h2>
-        <div id="playerProfile" class="small">불러오는 중...</div>
-        <div style="height:10px"></div>
-        <div class="pill" id="valuePill" data-kind="hot">몸값</div>
-        <div style="height:10px"></div>
-        <div id="valueBreakdown" class="small"></div>
-      </div>
-
-      <div class="card">
-        <h2>기록 요약</h2>
-        <div id="playerStats"></div>
-      </div>
-    </div>
-
-    <div style="height:14px"></div>
-
-    <div class="card">
-      <h2>참여 경기</h2>
-      <div id="playerMatches" class="small">불러오는 중...</div>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
-</body>
-</html>
   // ===============================
   // THEME SWITCH (GLOBAL)
   // ===============================
