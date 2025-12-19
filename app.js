@@ -603,8 +603,26 @@ renderLeadersWithLinks(
 
 // 🧤 클린시트 랭킹 (기록 페이지에는 GK만 표시)
 const cleanAll = computeCleanSheetLeaders(data);
-const cleanGKOnly = cleanAll.filter(row => isGK(row.player)); 
-// ↑ row 구조가 {player, value,...} 형태라고 가정 (대부분 이렇게 돼)
+
+// players map (playerId → player)
+const playerById = new Map((data.players || []).map(p => [p.id, p]));
+
+// row가 어떤 형태든 GK인지 판별
+const cleanGKOnly = cleanAll.filter(row => {
+  // 1) row.player에 player 객체가 있는 경우
+  if (row && row.player) return isGK(row.player);
+
+  // 2) row.pos에 포지션이 직접 있는 경우
+  if (row && row.pos) return String(row.pos).toUpperCase() === "GK";
+
+  // 3) row.playerId에 id만 있는 경우
+  if (row && row.playerId) return isGK(playerById.get(row.playerId));
+
+  // 4) 혹시 row.id가 playerId인 경우(가끔 이렇게 구현됨)
+  if (row && row.id) return isGK(playerById.get(row.id));
+
+  return false;
+});
 
 renderLeadersWithLinks(
   document.querySelector("#cleanSheetLeaders"),
