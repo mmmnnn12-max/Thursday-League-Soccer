@@ -1031,10 +1031,11 @@ if (page === "player") {
 
     // 모바일 카드
     renderMobileList(listBox, players.map(p => ({
-      title: p.name,
-      badge: `${goalsMap.get(p.id) || 0}골`,
-      kvs: [["팀", p.team]],
-    })));
+  title: p.name,
+  badge: `${goalsMap.get(p.id) || 0}골`,
+  href: `player.html?id=${encodeURIComponent(p.id)}`,   // ✅ 추가
+  kvs: [["팀", p.team]],
+})));
 
     // 득점 랭킹(전체)
     const allRank = computeAllPlayerGoalRanking(data);
@@ -1043,10 +1044,11 @@ if (page === "player") {
       allRank.map((r,i)=>[i+1, `${medalOf(i)} ${r.name}`.trim(), r.team, r.goals])
     );
     renderMobileList(rankBox, allRank.map((r,i)=>({
-      title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
-      badge: `${r.goals}골`,
-      kvs: [["팀", r.team]],
-    })));
+  title: `${medalOf(i)} ${i+1}위 · ${r.name}`.trim(),
+  badge: `${r.goals}골`,
+  href: `player.html?id=${encodeURIComponent(r.playerId)}`, // ✅ 추가
+  kvs: [["팀", r.team]],
+})));
   };
 
   teamSel.addEventListener("change", render);
