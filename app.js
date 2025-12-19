@@ -882,6 +882,10 @@ window.addEventListener("DOMContentLoaded", () => {
     `;
   });
 });
+// ✅ 클릭 시 에러 방지용: 전역으로 등록
+window.computePlayerValue = function computePlayerValue(playerId, data) {
+  return 0; // 나중에 진짜 계산으로 바꿔도 됨
+};
 window.addEventListener("DOMContentLoaded", () => {
   boot().catch(err => {
     console.error(err);
