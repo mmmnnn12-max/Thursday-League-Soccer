@@ -15,106 +15,127 @@
       "id": "p1",
       "team": "팀임태원",
       "name": "이영재"
+      "pos": "MF"
     },
     {
       "id": "p2",
       "team": "팀임태원",
       "name": "원동현"
+      "pos": "DF"
     },
     {
       "id": "p3",
       "team": "팀임태원",
       "name": "김연후"
+      "pos": "FW"
     },
     {
       "id": "p4",
       "team": "팀임태원",
       "name": "윤시온"
+      "pos": "MF"
     },
     {
       "id": "p5",
       "team": "팀임태원",
       "name": "배시온"
+      "pos": "MF"
     },
     {
       "id": "p6",
       "team": "팀임태원",
       "name": "임태원"
+      "pos": "GK"
     },
     {
       "id": "p7",
       "team": "팀이현준",
       "name": "이현준"
+      "pos": "MF"
     },
     {
       "id": "p8",
       "team": "팀이현준",
       "name": "유진영"
+      "pos": "MF"
     },
     {
       "id": "p9",
       "team": "팀이현준",
       "name": "서보경"
+      "pos": "DF"
     },
     {
       "id": "p10",
       "team": "팀이현준",
       "name": "부찬우"
+      "pos": "FW"
     },
     {
       "id": "p11",
       "team": "팀이현준",
       "name": "김강영"
+      "pos": "MF"
     },
     {
       "id": "p12",
       "team": "팀이현준",
       "name": "김범준"
+      "pos": "DF"
     },
     {
       "id": "p13",
       "team": "팀윤하준",
       "name": "윤하준"
+      "pos": "MF"
     },
     {
       "id": "p14",
       "team": "팀윤하준",
       "name": "홍윤서"
+      "pos": "FW"
     },
     {
       "id": "p15",
       "team": "팀윤하준",
       "name": "임윤재"
+      "pos": "MF"
     },
     {
       "id": "p16",
       "team": "팀윤하준",
       "name": "강현준"
+      "pos": "DF"
     },
     {
       "id": "p17",
       "team": "팀윤하준",
       "name": "박광민"
+      "pos": "GK"
     },
     {
       "id": "p18",
       "team": "팀조민규",
       "name": "조민규"
+      "pos": "MF"
     },
     {
       "id": "p19",
       "team": "팀조민규",
       "name": "김태일"
+      "pos": "DF"
     },
     {
       "id": "p20",
       "team": "팀조민규",
       "name": "서지안"
+      "pos": "FW"
     },
     {
       "id": "p21",
       "team": "팀조민규",
       "name": "박서준"
+      "pos": "FW"
     }
   ],
   "matches": [
