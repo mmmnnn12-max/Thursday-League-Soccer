@@ -602,10 +602,11 @@ button:active{ transform: translateY(0) scale(.99); }
 /* 1) 기본: PC는 표 보이고 모바일카드 숨김 */
 .mList { display: none; }
 
-/* 2) 모바일: 표 숨기고 카드 보이게 */
 @media (max-width: 520px) {
-  .table { display: none; }
+  /* 표를 숨기지 말고, 작은 화면에서 스크롤로 보이게 */
+  .table { display: table; }
   .mList { display: block; }
+}
 
   /* 레이아웃: 모바일은 1열로 */
   .grid { grid-template-columns: 1fr !important; }
