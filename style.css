@@ -1,30 +1,39 @@
 /* ================================
-   THEME TOKENS
-================================ */
+   THEME TOKENS (Premium Blue/Black)
+   ================================ */
 :root{
   --w: 980px;
 
-  --bg0: #060914;
-  --bg1: #0b0f19;
+  /* base */
+  --bg0: #050816;
+  --bg1: #070b1a;
+  --bg2: #0b1228;
 
-  --text: #e9eefc;
-  --muted: rgba(233,238,252,.85);
+  --text: #eaf0ff;
+  --muted: rgba(234,240,255,.78);
 
-  --card: rgba(233,238,252,.05);
-  --cardBorder: rgba(233,238,252,.10);
+  /* glass */
+  --card: rgba(255,255,255,.055);
+  --card2: rgba(255,255,255,.035);
+  --cardBorder: rgba(255,255,255,.10);
 
-  /* theme accent (default: blue) */
-  --accent-rgb: 59,130,246;
-  --accent2-rgb: 96,165,250;
+  /* theme accent (default blue) */
+  --accent-rgb: 72,110,255;   /* primary */
+  --accent2-rgb: 120,190,255; /* secondary */
+
+  /* shadows */
+  --shadow1: 0 18px 60px rgba(0,0,0,.45);
+  --shadow2: 0 1px 0 rgba(255,255,255,.06) inset;
+
+  /* radius */
+  --rCard: 18px;
+  --rPill: 999px;
 }
 
-html[data-theme="purple"]{ --accent-rgb: 168,85,247; --accent2-rgb: 192,132,252; }
+html[data-theme="purple"]{ --accent-rgb: 168,85,247; --accent2-rgb: 216,180,254; }
 html[data-theme="green"] { --accent-rgb: 34,197,94;  --accent2-rgb: 134,239,172; }
 html[data-theme="red"]   { --accent-rgb: 239,68,68;  --accent2-rgb: 252,165,165; }
 
-/* ================================
-   BASE
-================================ */
 * { box-sizing: border-box; }
 a { color: inherit; text-decoration: none; }
 
@@ -32,17 +41,20 @@ body{
   margin:0;
   font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Arial;
   color: var(--text);
+
+  /* ✅ 고급 블루/블랙 배경 (필드 라인 느낌 아주 약하게) */
   background:
-    radial-gradient(900px 520px at 20% -10%, rgba(var(--accent-rgb), .22), transparent 60%),
-    radial-gradient(820px 460px at 85% 0%, rgba(var(--accent2-rgb), .14), transparent 58%),
+    radial-gradient(1200px 700px at 15% -15%, rgba(var(--accent-rgb), .30), transparent 60%),
+    radial-gradient(900px 520px at 85% 0%, rgba(var(--accent2-rgb), .18), transparent 55%),
+    radial-gradient(700px 420px at 50% 110%, rgba(var(--accent-rgb), .16), transparent 60%),
     repeating-linear-gradient(
       to bottom,
       rgba(255,255,255,.018) 0px,
       rgba(255,255,255,.018) 1px,
       transparent 1px,
-      transparent 62px
+      transparent 64px
     ),
-    linear-gradient(180deg, #060914 0%, #0b0f19 55%, #060914 100%);
+    linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 45%, var(--bg2) 100%);
 }
 
 /* PC 기본: 모바일 전용 UI 숨김 */
