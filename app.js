@@ -241,27 +241,32 @@ function computeAssistLeaders(data) {
   return rows;
 }
  function computePlayerValue(card) {
-  // card: computePlayerCard()가 리턴한 객체
-  // { goals, assists, cleanSheets, teamW, teamD, teamL, ... }
-
-  const g = card.goals || 0;
-  const a = card.assists || 0;
+  const g  = card.goals || 0;
+  const a  = card.assists || 0;
   const cs = card.cleanSheets || 0;
 
-  // 점수 규칙(원하는대로 바꿀 수 있음)
-  const score =
-    g * 10 +      // 골 10점
-    a * 7  +      // 어시 7점
-    cs * 6 +      // 클린시트 6점
-    (card.teamW || 0) * 1; // 팀 승리 보너스(가볍게)
+  // 기본 몸값 (억 단위)
+  const base = 50;
+
+  // 성과 보너스 (억 단위)
+  const bonus =
+    g * 10 +          // 골 10억
+    a * 7  +          // 어시스트 7억
+    cs * 6 +          // 클린시트 6억
+    (card.teamW || 0) * 1; // 팀 승리 1억
+
+  const total = base + bonus;
 
   return {
-    value: score,
+    value: total,              // ✅ 숫자 (억)
+    valueText: `${total}억`,   // ✅ 표시용
     breakdown: [
-      `⚽ 득점 ${g} × 10 = ${g*10}`,
-      `🅰️ 어시 ${a} × 7 = ${a*7}`,
-      `🧤 클린시트 ${cs} × 6 = ${cs*6}`,
-      `🏆 팀승 ${card.teamW || 0} × 1 = ${(card.teamW || 0)*1}`,
+      `기본 몸값: ${base}억`,
+      `⚽ 득점 ${g} × 10 = ${g * 10}억`,
+      `🅰️ 어시 ${a} × 7 = ${a * 7}억`,
+      `🧤 클린시트 ${cs} × 6 = ${cs * 6}억`,
+      `🏆 팀승 ${card.teamW || 0} × 1 = ${(card.teamW || 0) * 1}억`,
+      `합계: ${total}억`,
     ]
   };
 }
