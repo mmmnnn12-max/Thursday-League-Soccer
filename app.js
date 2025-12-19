@@ -66,6 +66,11 @@ function renderMobileList(container, items) {
 }
 
 /* ------------------ Compute ------------------ */
+
+// ===== POS HELPERS =====
+const isGK = (p) => (String(p?.pos || "").toUpperCase() === "GK");
+const isDF = (p) => (String(p?.pos || "").toUpperCase() === "DF");
+const isGKOrDF = (p) => (isGK(p) || isDF(p));
 function computeStandings(data) {
   const { teams, rules, matches } = data;
   const table = {};
