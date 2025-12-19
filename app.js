@@ -604,7 +604,20 @@ function computePlayerCard(data, playerId){
     cleanSheets,
     teamPlayed: teamPlayedMatches.length,
     teamW, teamD, teamL,
+         concededTotal,
+    bigConcedeMatches,
   };
+       // ✅ 실점 합계 / 대량실점(기준: 4실점 이상) 횟수
+  let concededTotal = 0;
+  let bigConcedeMatches = 0;
+
+  for (const m of teamPlayedMatches){
+    const isHome = (player.team === m.home);
+    const ga = isHome ? m.ag : m.hg; // 이 팀 실점
+    concededTotal += ga;
+
+    if (ga >= 4) bigConcedeMatches += 1; // 대량실점 기준
+  }
 }
 
 function renderPlayerMatches(container, data, playerId){
@@ -952,9 +965,53 @@ if (page === "player") {
       `;
 
       // 몸값 계산
-      const val = computePlayerValue(card);
-      if (valuePill) valuePill.textContent = `💰 몸값: ${val.value}`;
-      if (breakdownBox) breakdownBox.innerHTML = val.breakdown.map(x => `• ${x}`).join("<br/>");
+      function computePlayerValue(card) {
+  const g  = card.goals || 0;
+  const a  = card.assists || 0;
+  const cs = card.cleanSheets || 0;
+
+  const W = card.teamW || 0;
+  const D = card.teamD || 0;
+  const L = card.teamL || 0;
+
+  const conceded = card.concededTotal || 0;
+  const big = card.bigConcedeMatches || 0;
+
+  const pos = String(card.player?.pos || "").toUpperCase();
+  const isGK = (pos === "GK");
+  const isDF = (pos === "DF");
+  const isGKDF = isGK || isDF;
+
+  // 1) 기본 점수(공격/기록)
+  const attackScore = g * 10 + a * 7;
+  const csScore = cs * 6;
+
+  // 2) 팀 결과: 지면 떨어지게(핵심)
+  //   - 승/무는 소폭 보너스, 패는 확실 감점
+  const resultScore = (W * 2) + (D * 1) + (L * -4);
+
+  // 3) 실점 감점: GK/DF는 세게, 그 외는 약하게
+  const concedePenalty = isGKDF ? (conceded * 1.5) : (conceded * 0.3);
+
+  // 4) 대량실점 추가 감점: GK가 가장 크게
+  //   - big(대량실점 경기 수) * 페널티
+  const bigPenalty = big * (isGK ? 12 : isDF ? 8 : 3);
+
+  const raw = attackScore + csScore + resultScore - concedePenalty - bigPenalty;
+  const score = Math.round(raw);
+
+  return {
+    value: score,
+    breakdown: [
+      `⚽ 득점 ${g} × 10 = ${g*10}`,
+      `🅰️ 어시 ${a} × 7 = ${a*7}`,
+      `🧤 클린시트 ${cs} × 6 = ${cs*6}`,
+      `🏆 팀결과 W${W}/D${D}/L${L} = ${resultScore}`,
+      `🛡️ 실점 감점(${isGKDF ? "GK/DF" : "기타"}): ${conceded}실점 → -${Math.round(concedePenalty)}`,
+      `🚨 대량실점(${big}경기) 감점 = -${bigPenalty}`,
+    ]
+  };
+}
 
       // 기록 요약 표
       renderTable(statsBox, ["항목","수치"], [
