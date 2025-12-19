@@ -125,10 +125,7 @@ function computeStandings(data) {
     (b.PTS - a.PTS) || (b.GD - a.GD) || (b.GF - a.GF) || a.team.localeCompare(b.team, "ko")
   );
 }
-// 임시: 선수 가치 계산 (아직 기능 미구현이면 0 반환)
-function computePlayerValue(playerId, data) {
-  return 0;
-}
+
 
 function computeTeamGoals(data) {
   const goals = {};
@@ -228,7 +225,22 @@ function computeAssistLeaders(data) {
     if (!playersById.has(a.playerId)) continue;
     score.set(a.playerId, (score.get(a.playerId) || 0) + (a.count || 0));
   }
-   function computePlayerValue(card) {
+  
+
+  const rows = Array.from(score.entries()).map(([playerId, assists]) => {
+    const p = playersById.get(playerId);
+    return { playerId, name: p.name, team: p.team, assists };
+  });
+
+  rows.sort((a,b) =>
+    (b.assists - a.assists) ||
+    a.team.localeCompare(b.team, "ko") ||
+    a.name.localeCompare(b.name, "ko")
+  );
+
+  return rows;
+}
+ function computePlayerValue(card) {
   // card: computePlayerCard()가 리턴한 객체
   // { goals, assists, cleanSheets, teamW, teamD, teamL, ... }
 
@@ -252,20 +264,6 @@ function computeAssistLeaders(data) {
       `🏆 팀승 ${card.teamW || 0} × 1 = ${(card.teamW || 0)*1}`,
     ]
   };
-}
-
-  const rows = Array.from(score.entries()).map(([playerId, assists]) => {
-    const p = playersById.get(playerId);
-    return { playerId, name: p.name, team: p.team, assists };
-  });
-
-  rows.sort((a,b) =>
-    (b.assists - a.assists) ||
-    a.team.localeCompare(b.team, "ko") ||
-    a.name.localeCompare(b.name, "ko")
-  );
-
-  return rows;
 }
 function computeCleanSheetLeaders(data) {
   const playersById = new Map((data.players || []).map(p => [p.id, p]));
