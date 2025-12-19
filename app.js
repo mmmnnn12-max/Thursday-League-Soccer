@@ -70,10 +70,13 @@ function renderTable(container, headers, rows) {
 }
 
 function renderMobileList(container, items) {
-  // PC에서도 append는 되지만, CSS에서 .mList를 숨겨두었기 때문에 “표 밑 텍스트” 문제 없음
   const list = el("div", { class: "mList" });
+
   items.forEach(it => {
-    const card = el("div", { class: "mItem" });
+    // ✅ href가 있으면 a태그(링크), 없으면 div
+    const wrap = document.createElement(it.href ? "a" : "div");
+    wrap.className = "mItem" + (it.href ? " mItemLink" : "");
+    if (it.href) wrap.href = it.href;
 
     const top = el("div", { class: "mTop" }, [
       el("div", { text: it.title }),
@@ -88,9 +91,9 @@ function renderMobileList(container, items) {
       ]));
     });
 
-    card.appendChild(top);
-    card.appendChild(meta);
-    list.appendChild(card);
+    wrap.appendChild(top);
+    wrap.appendChild(meta);
+    list.appendChild(wrap);
   });
 
   container.appendChild(list);
@@ -414,16 +417,17 @@ function renderStandings(container, standings) {
   container.appendChild(table);
 
   renderMobileList(container, standings.map((r, i) => ({
-    title: `${i+1}위 · ${r.team}`,
-    badge: `${r.PTS}점`,
-    kvs: [
-      ["경기", r.P],
-      ["승/무/패", `${r.W}/${r.D}/${r.L}`],
-      ["득점", r.GF],
-      ["실점", r.GA],
-      ["득실", r.GD],
-    ]
-  })));
+  title: `${i+1}위 · ${r.team}`,
+  badge: `${r.PTS}점`,
+  href: `team.html?team=${encodeURIComponent(r.team)}`, // ✅ 추가
+  kvs: [
+    ["경기", r.P],
+    ["승/무/패", `${r.W}/${r.D}/${r.L}`],
+    ["득점", r.GF],
+    ["실점", r.GA],
+    ["득실", r.GD],
+  ]
+})));
 }
 
 function renderSchedule(container, data, opts = {}) {
