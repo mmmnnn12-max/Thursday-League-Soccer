@@ -1,8 +1,39 @@
 
      async function loadData() {
-  const res = await fetch("matches.json", { cache: "no-store" });
-  if (!res.ok) throw new Error("matches.json을 불러오지 못했어요.");
-  return await res.json();
+  const url = "matches.json";
+  const res = await fetch(url, { cache: "no-store" });
+
+  const ct = res.headers.get("content-type") || "";
+  const text = await res.text(); // 먼저 text로 받기
+
+  if (!res.ok) {
+    console.error("FETCH FAIL:", res.status, res.statusText, "URL:", res.url);
+    console.error("BODY(first 200):", text.slice(0, 200));
+    throw new Error(`matches.json fetch 실패 (${res.status})`);
+  }
+
+  // HTML이면 바로 잡아내기
+  if (text.trim().startsWith("<")) {
+    console.error("HTML RECEIVED INSTEAD OF JSON. URL:", res.url);
+    console.error("BODY(first 200):", text.slice(0, 200));
+    throw new Error("matches.json 대신 HTML을 받았어(경로/404/캐시 문제).");
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (e) {
+    console.error("JSON PARSE ERROR:", e);
+    console.error("BODY(first 400):", text.slice(0, 400));
+    throw e;
+  }
+
+  // 구조 검증(여기서 걸리면 matches.json 구조/경로 문제 확정)
+  if (!data || typeof data !== "object") throw new Error("matches.json이 객체가 아님");
+  if (!Array.isArray(data.teams)) throw new Error("matches.json에 teams 배열이 없음");
+  if (!Array.isArray(data.matches)) throw new Error("matches.json에 matches 배열이 없음");
+
+  return data;
 }
 function deepClone(x) { return JSON.parse(JSON.stringify(x)); }
 
