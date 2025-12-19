@@ -64,6 +64,48 @@ body{
 .container { max-width: var(--w); margin: 0 auto; padding: 18px; }
 
 /* ================================
+   GLASS UI UPGRADE
+   ================================ */
+.topbar{
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(6,10,25,.78);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.card{
+  background:
+    radial-gradient(120% 140% at 10% 0%, rgba(var(--accent2-rgb), .10), transparent 55%),
+    linear-gradient(180deg, var(--card) 0%, var(--card2) 100%);
+  border: 1px solid var(--cardBorder);
+  border-radius: var(--rCard);
+  padding: 16px;
+  box-shadow: var(--shadow1), var(--shadow2);
+}
+
+.card:hover{
+  border-color: rgba(var(--accent2-rgb), .22);
+  box-shadow: 0 22px 70px rgba(0,0,0,.52), var(--shadow2);
+}
+
+button{
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  font-weight: 900;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+button:hover{
+  transform: translateY(-1px);
+  border-color: rgba(var(--accent2-rgb), .28);
+  background: rgba(var(--accent-rgb), .14);
+  box-shadow: 0 0 18px rgba(var(--accent-rgb), .12);
+}
+button:active{ transform: translateY(0) scale(.99); }
+
+/* ================================
    TOPBAR / NAV
 ================================ */
 .topbar{
