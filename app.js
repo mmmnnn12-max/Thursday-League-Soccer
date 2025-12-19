@@ -601,11 +601,15 @@ renderLeadersWithLinks(
   computeAssistLeaders(data)
 );
 
-// 🧤 클린시트 랭킹
+// 🧤 클린시트 랭킹 (기록 페이지에는 GK만 표시)
+const cleanAll = computeCleanSheetLeaders(data);
+const cleanGKOnly = cleanAll.filter(row => isGK(row.player)); 
+// ↑ row 구조가 {player, value,...} 형태라고 가정 (대부분 이렇게 돼)
+
 renderLeadersWithLinks(
   document.querySelector("#cleanSheetLeaders"),
   "clean",
-  computeCleanSheetLeaders(data)
+  cleanGKOnly
 );
   }
 
