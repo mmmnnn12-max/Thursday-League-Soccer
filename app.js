@@ -561,6 +561,7 @@ async function boot() {
       renderMini();
     }
   }
+     
 
   if (page === "schedule") {
     const box = document.querySelector("#schedule");
@@ -630,7 +631,58 @@ renderLeadersWithLinks(
   cleanGKOnly
 );
   }
+if (page === "player") {
+  const params = new URLSearchParams(location.search);
+  const playerId = params.get("id");
 
+  const title = document.querySelector("#playerTitle");
+  const profile = document.querySelector("#playerProfile");
+  const statsBox = document.querySelector("#playerStats");
+  const matchesBox = document.querySelector("#playerMatches");
+  const valuePill = document.querySelector("#valuePill");
+  const breakdownBox = document.querySelector("#valueBreakdown");
+
+  if (!playerId) {
+    title.textContent = "선수";
+    profile.innerHTML = `<div class="small">id 파라미터가 없어. 예: player.html?id=p1</div>`;
+    statsBox.innerHTML = `<div class="small">-</div>`;
+    matchesBox.innerHTML = `<div class="small">-</div>`;
+  } else {
+    const card = computePlayerCard(data, playerId);
+    if (!card) {
+      title.textContent = "선수";
+      profile.innerHTML = `<div class="small">선수를 찾을 수 없어: ${playerId}</div>`;
+      statsBox.innerHTML = `<div class="small">-</div>`;
+      matchesBox.innerHTML = `<div class="small">-</div>`;
+    } else {
+      const p = card.player;
+      title.textContent = `${p.name}`;
+
+      profile.innerHTML = `
+        <div class="small">
+          팀: <b>${p.team}</b><br/>
+          포지션: <b>${p.pos || "-"}</b><br/>
+          팀 경기: ${card.teamPlayed} (승${card.teamW}/무${card.teamD}/패${card.teamL})
+        </div>
+      `;
+
+      // 몸값 계산
+      const val = computePlayerValue(card);
+      if (valuePill) valuePill.textContent = `💰 몸값: ${val.value}`;
+      if (breakdownBox) breakdownBox.innerHTML = val.breakdown.map(x => `• ${x}`).join("<br/>");
+
+      // 기록 요약 표
+      renderTable(statsBox, ["항목","수치"], [
+        ["득점", card.goals],
+        ["어시스트", card.assists],
+        ["클린시트(GK/DF)", card.cleanSheets],
+      ]);
+
+      // 참여 경기
+      renderPlayerMatches(matchesBox, data, playerId);
+    }
+  }
+}1
   if (page === "team") {
     const params = new URLSearchParams(location.search);
     const team = params.get("team");
