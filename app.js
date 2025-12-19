@@ -94,6 +94,10 @@ function computeStandings(data) {
     (b.PTS - a.PTS) || (b.GD - a.GD) || (b.GF - a.GF) || a.team.localeCompare(b.team, "ko")
   );
 }
+// 임시: 선수 가치 계산 (아직 기능 미구현이면 0 반환)
+function computePlayerValue(playerId, data) {
+  return 0;
+}
 
 function computeTeamGoals(data) {
   const goals = {};
