@@ -699,6 +699,10 @@ summaryBox.appendChild(formRow);
 window.addEventListener("DOMContentLoaded", () => {
   boot().catch(err => {
     console.error(err);
-    document.body.innerHTML = `<div style="padding:20px;color:#fff;">에러: ${err.message}</div>`;
+    document.body.innerHTML = `
+      <div style="padding:20px;color:#fff;font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;">
+        에러: ${err.message}\n\n${err.stack || "(no stack)"}
+      </div>
+    `;
   });
 });
