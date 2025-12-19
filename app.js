@@ -645,6 +645,12 @@ function renderPlayerMatches(container, data, playerId){
   });
 
   renderTable(container, ["라운드","경기","결과"], items);
+
+renderMobileList(container, items.map(row => ({
+  title: `${row[0]} · ${row[1]}`,   // "R1 · 팀A vs 팀B"
+  badge: "",
+  kvs: [["결과", row[2]]],         // "3:0 · 12/18 ... · ⚽1 🅰️1"
+})));
 }
 function getTeamMatches(data, team) {
   return data.matches
@@ -956,6 +962,13 @@ if (page === "player") {
         ["어시스트", card.assists],
         ["클린시트(GK/DF)", card.cleanSheets],
       ]);
+         renderMobileList(statsBox, [
+  { title: "기록 요약", badge: "", kvs: [
+    ["득점", card.goals],
+    ["어시스트", card.assists],
+    ["클린시트(GK/DF)", card.cleanSheets],
+  ]}
+]);
 
       // 참여 경기
       renderPlayerMatches(matchesBox, data, playerId);
