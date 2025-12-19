@@ -169,6 +169,9 @@ function computeAssistLeaders(data) {
     if (!playersById.has(a.playerId)) continue;
     score.set(a.playerId, (score.get(a.playerId) || 0) + (a.count || 0));
   }
+     function computePlayerValue() {
+  return 0; // 임시 값
+}
 
   const rows = Array.from(score.entries()).map(([playerId, assists]) => {
     const p = playersById.get(playerId);
