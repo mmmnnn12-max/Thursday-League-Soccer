@@ -193,65 +193,61 @@
       "ag": null,
       "date": ""
     },
-{
-  "id": 7,
-  "round": 4,
-  "home": "팀윤하준",
-  "away": "팀임태원",
-  "hg": null,
-  "ag": null,
-  "date": ""
-},
-{
-  "id": 8,
-  "round": 4,
-  "home": "팀조민규",
-  "away": "팀이현준",
-  "hg": null,
-  "ag": null,
-  "date": ""
-},
-
-{
-  "id": 9,
-  "round": 5,
-  "home": "팀이현준",
-  "away": "팀임태원",
-  "hg": null,
-  "ag": null,
-  "date": ""
-},
-{
-  "id": 10,
-  "round": 5,
-  "home": "팀조민규",
-  "away": "팀윤하준",
-  "hg": null,
-  "ag": null,
-  "date": ""
-},
-
-{
-  "id": 11,
-  "round": 6,
-  "home": "팀조민규",
-  "away": "팀임태원",
-  "hg": null,
-  "ag": null,
-  "date": ""
-},
-{
-  "id": 12,
-  "round": 6,
-  "home": "팀윤하준",
-  "away": "팀이현준",
-  "hg": null,
-  "ag": null,
-  "date": ""
-}
-
+    {
+      "id": 7,
+      "round": 4,
+      "home": "팀윤하준",
+      "away": "팀임태원",
+      "hg": null,
+      "ag": null,
+      "date": ""
+    },
+    {
+      "id": 8,
+      "round": 4,
+      "home": "팀조민규",
+      "away": "팀이현준",
+      "hg": null,
+      "ag": null,
+      "date": ""
+    },
+    {
+      "id": 9,
+      "round": 5,
+      "home": "팀이현준",
+      "away": "팀임태원",
+      "hg": null,
+      "ag": null,
+      "date": ""
+    },
+    {
+      "id": 10,
+      "round": 5,
+      "home": "팀조민규",
+      "away": "팀윤하준",
+      "hg": null,
+      "ag": null,
+      "date": ""
+    },
+    {
+      "id": 11,
+      "round": 6,
+      "home": "팀조민규",
+      "away": "팀임태원",
+      "hg": null,
+      "ag": null,
+      "date": ""
+    },
+    {
+      "id": 12,
+      "round": 6,
+      "home": "팀윤하준",
+      "away": "팀이현준",
+      "hg": null,
+      "ag": null,
+      "date": ""
+    }
   ],
-
   "goals": [
     {
       "matchId": 1,
@@ -266,6 +262,13 @@
     {
       "matchId": 1,
       "playerId": "p4",
+      "count": 1
+    }
+  ],
+  "assists": [
+    {
+      "matchId": 1,
+      "playerId": "p5",
       "count": 1
     }
   ]
