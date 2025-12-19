@@ -56,7 +56,25 @@ body{
     ),
     linear-gradient(180deg, var(--bg0) 0%, var(--bg1) 45%, var(--bg2) 100%);
 }
-
+body:before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: .55;
+  background:
+    radial-gradient(600px 360px at 20% 15%, rgba(var(--accent2-rgb), .16), transparent 70%),
+    radial-gradient(520px 320px at 80% 10%, rgba(var(--accent-rgb), .18), transparent 72%),
+    radial-gradient(680px 420px at 50% 120%, rgba(var(--accent2-rgb), .10), transparent 70%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.010) 0px,
+      rgba(255,255,255,.010) 1px,
+      transparent 1px,
+      transparent 90px
+    );
+}
 /* PC 기본: 모바일 전용 UI 숨김 */
 .mList { display: none; }
 .tabbar, .sheetOverlay { display: none; }
@@ -82,7 +100,32 @@ body{
   padding: 16px;
   box-shadow: var(--shadow1), var(--shadow2);
 }
-
+.card{
+  position: relative;
+  overflow: hidden;
+}
+.card:before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background:
+    radial-gradient(600px 220px at 20% 0%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(520px 240px at 90% 10%, rgba(var(--accent2-rgb), .10), transparent 65%);
+  opacity: .55;
+  mix-blend-mode: screen;
+}
+.card:after{
+  content:"";
+  position:absolute;
+  left:-30%;
+  top:-40%;
+  width: 60%;
+  height: 120%;
+  transform: rotate(18deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
+  opacity: .25;
+}
 .card:hover{
   border-color: rgba(var(--accent2-rgb), .22);
   box-shadow: 0 22px 70px rgba(0,0,0,.52), var(--shadow2);
