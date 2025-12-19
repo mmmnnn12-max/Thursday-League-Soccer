@@ -467,6 +467,65 @@ function renderTeamGoals(container, rows) {
     kvs: []
   })));
 }
+function renderTeamPlayers(container, data, team){
+  if (!container) return;
+
+  const players = (data.players || [])
+    .filter(p => p.team === team)
+    .slice()
+    .sort((a,b) => {
+      // 포지션 정렬: GK > DF > MF > FW > 기타
+      const order = { GK:0, DF:1, MF:2, FW:3 };
+      const ap = String(a.pos || "").toUpperCase();
+      const bp = String(b.pos || "").toUpperCase();
+      const ao = (ap in order) ? order[ap] : 9;
+      const bo = (bp in order) ? order[bp] : 9;
+      return (ao - bo) || a.name.localeCompare(b.name, "ko");
+    });
+
+  if (!players.length){
+    container.innerHTML = `<div class="small">등록된 선수가 없어.</div>`;
+    return;
+  }
+
+  // PC 표 (이름은 링크)
+  const table = el("table", { class: "table" });
+  const thead = el("thead");
+  const trh = el("tr");
+  ["번호","선수","포지션"].forEach(h => trh.appendChild(el("th",{text:h})));
+  thead.appendChild(trh);
+
+  const tbody = el("tbody");
+  players.forEach((p, idx) => {
+    const tr = el("tr");
+
+    tr.appendChild(el("td", { text: String(idx+1) }));
+
+    const tdName = document.createElement("td");
+    const a = document.createElement("a");
+    a.href = `player.html?id=${encodeURIComponent(p.id)}`;
+    a.className = "playerLink";
+    a.textContent = p.name;
+    tdName.appendChild(a);
+    tr.appendChild(tdName);
+
+    tr.appendChild(el("td", { text: (p.pos || "-") }));
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+
+  container.innerHTML = "";
+  container.appendChild(table);
+
+  // 모바일 카드
+  renderMobileList(container, players.map(p => ({
+    title: p.name,
+    badge: p.pos || "-",
+    kvs: [["팀", p.team]]
+  })));
+}
 
 function renderTopScorers(container, rows) {
   if (!rows.length) {
@@ -997,8 +1056,9 @@ if (page === "player") {
     const title = document.querySelector("#teamTitle");
     const summaryBox = document.querySelector("#teamSummary");
     const scorersBox = document.querySelector("#teamScorers");
+    const playersBox = document.querySelector("#teamPlayers");
     const matchesBox = document.querySelector("#teamMatches");
-
+    
     if (!team) {
       if (title) title.textContent = "팀";
       if (summaryBox) summaryBox.innerHTML = `<div class="small">team 파라미터가 없어. 예: team.html?team=팀임태원</div>`;
@@ -1039,6 +1099,7 @@ summaryBox.appendChild(formRow);
         renderTable(scorersBox, ["순위","선수","골"], top.map((r,i)=>[i+1, r.name, r.goals]));
         renderMobileList(scorersBox, top.map((r,i)=>({ title:`${i+1}위 · ${r.name}`, badge:`${r.goals}골`, kvs:[] })));
       }
+         renderTeamPlayers(playersBox, data, team);
 
       const tMatches = data.matches.filter(m => m.home === team || m.away === team).slice()
         .sort((a,b) => (a.round - b.round) || (a.id - b.id));
