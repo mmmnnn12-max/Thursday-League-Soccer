@@ -269,6 +269,11 @@
       "matchId": 1,
       "playerId": "p4",
       "count": 1
+    },
+    {
+      "matchId": 2,
+      "playerId": "p12",
+      "count": 1
     }
   ],
   "assists": [
