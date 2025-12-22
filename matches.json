@@ -159,8 +159,8 @@
       "round": 1,
       "home": "팀이현준",
       "away": "팀조민규",
-      "hg": 1,
-      "ag": 1,
+      "hg": 3,
+      "ag": 0,
       "date": "12/22 (월) 13:25"
     },
     {
@@ -279,6 +279,11 @@
       "matchId": 2,
       "playerId": "p7",
       "count": 1
+    },
+    {
+      "matchId": 2,
+      "playerId": "p10",
+      "count": 1
     }
   ],
   "assists": [
@@ -289,6 +294,11 @@
     },
     {
       "matchId": 1,
+      "playerId": "p3",
+      "count": 1
+    },
+    {
+      "matchId": 16,
       "playerId": "p3",
       "count": 1
     }
