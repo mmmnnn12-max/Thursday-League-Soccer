@@ -273,7 +273,7 @@
     {
       "matchId": 2,
       "playerId": "p12",
-      "count": 1
+      "count": 2
     },
     {
       "matchId": 2,
@@ -320,7 +320,7 @@
     {
       "matchId": 2,
       "playerId": "p7",
-      "count": 1
+      "count": 2
     }
   ]
 }
